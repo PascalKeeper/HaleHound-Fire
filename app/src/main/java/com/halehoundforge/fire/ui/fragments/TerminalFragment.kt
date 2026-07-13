@@ -18,6 +18,8 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.halehoundforge.fire.R
 import com.halehoundforge.fire.databinding.FragmentTerminalBinding
+import com.halehoundforge.fire.debug.Breadcrumbs
+import com.halehoundforge.fire.debug.CrashGuard
 import com.halehoundforge.fire.terminal.OpsTerminalEngine
 import com.halehoundforge.fire.ui.MainActivity
 import kotlinx.coroutines.CancellationException
@@ -154,6 +156,8 @@ class TerminalFragment : Fragment() {
             } catch (_: CancellationException) {
                 // Tab left mid-command — expected
             } catch (e: Exception) {
+                CrashGuard.recordNonFatal("term_execute", e)
+                Breadcrumbs.error("term: ${e.message}")
                 val live = _binding
                 if (live != null && isAdded) {
                     live.btnRun.isEnabled = true

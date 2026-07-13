@@ -7,6 +7,10 @@ import com.halehoundforge.fire.companion.CydDiscovery
 import com.halehoundforge.fire.companion.CydLinkClient
 import com.halehoundforge.fire.companion.CydLootVault
 import com.halehoundforge.fire.core.DeviceProfile
+import com.halehoundforge.fire.debug.Breadcrumbs
+import com.halehoundforge.fire.debug.CrashGuard
+import com.halehoundforge.fire.debug.DebugVault
+import com.halehoundforge.fire.debug.JankMonitor
 import com.halehoundforge.fire.update.AppUpdateChecker
 import com.halehoundforge.fire.hardening.FirewallBatchGenerator
 import com.halehoundforge.fire.hardening.HardeningEngine
@@ -48,6 +52,7 @@ class OpsTerminalEngine(private val context: Context) {
         if (line.isEmpty()) return Result("")
         history.addLast(line)
         while (history.size > 80) history.removeFirst()
+        Breadcrumbs.term(line)
 
         val parts = tokenize(line)
         val cmd = parts.firstOrNull()?.lowercase(Locale.US) ?: return Result("")
@@ -102,6 +107,12 @@ class OpsTerminalEngine(private val context: Context) {
                         BuildConfig.APPLICATION_ID
                 )
                 "update", "upgrade", "ota" -> runUpdateCheck()
+                "crashlog", "crash", "crashes" -> runCrashLog(args)
+                "crumbs", "breadcrumbs", "trail" -> Result(
+                    "═══ BREADCRUMBS ═══\n" + Breadcrumbs.dump()
+                )
+                "jank", "frames" -> Result(JankMonitor.summary())
+                "debug" -> runDebug(args)
                 "thanks", "dig", "family" -> Result(
                     "Copy that. Grok Build stays behind the glass;\n" +
                         "you keep living. Terminal is agent-friendly:\n" +
@@ -140,6 +151,68 @@ class OpsTerminalEngine(private val context: Context) {
             )
         } catch (e: Exception) {
             Result("Update check failed: ${e.message}\nNeed internet (GitHub Releases over Wi‑Fi).")
+        }
+    }
+
+    private fun runCrashLog(args: List<String>): Result {
+        val sub = args.firstOrNull()?.lowercase(Locale.US)
+        return when (sub) {
+            "clear", "wipe" -> {
+                val n = DebugVault.clear(context)
+                Breadcrumbs.clear()
+                Result("Cleared $n debug report(s) + breadcrumbs")
+            }
+            "list" -> {
+                val files = DebugVault.listReports(context)
+                Result(
+                    buildString {
+                        appendLine("═══ DEBUG REPORTS (${files.size}) ═══")
+                        appendLine(DebugVault.root(context).absolutePath)
+                        if (files.isEmpty()) appendLine("(empty — good)")
+                        else files.take(20).forEach {
+                            appendLine("${it.name}  ${it.length()}b")
+                        }
+                    }.trimEnd()
+                )
+            }
+            "test" -> {
+                // Non-fatal sample so we can verify vault without killing the app
+                CrashGuard.recordNonFatal("term_test", RuntimeException("operator crashlog test"))
+                Result("Wrote nonfatal test report. Run: crashlog")
+            }
+            else -> Result(
+                buildString {
+                    appendLine("═══ LATEST CRASH / HANG ═══")
+                    appendLine(DebugVault.readLatest(context))
+                    appendLine()
+                    appendLine("cmds: crashlog | crashlog list | crashlog clear | crashlog test")
+                    appendLine("      crumbs | jank | debug status")
+                }.trimEnd()
+            )
+        }
+    }
+
+    private fun runDebug(args: List<String>): Result {
+        val sub = args.firstOrNull()?.lowercase(Locale.US) ?: "status"
+        return when (sub) {
+            "status", "info" -> Result(
+                buildString {
+                    appendLine("═══ DEBUG STACK ═══")
+                    appendLine("CrashGuard     : armed (uncaught → DebugVault)")
+                    appendLine("HangWatchdog   : main ping 2s / hang @ 5s")
+                    appendLine("JankMonitor    : Choreographer frame budget")
+                    appendLine("StrictMode     : ${if (BuildConfig.DEBUG) "ON (debug)" else "off (release)"}")
+                    appendLine("reports dir    : ${DebugVault.root(context).absolutePath}")
+                    appendLine("report count   : ${DebugVault.listReports(context).size}")
+                    appendLine()
+                    appendLine(JankMonitor.summary())
+                }.trimEnd()
+            )
+            "jankreset" -> {
+                JankMonitor.resetCounters()
+                Result("Jank counters reset")
+            }
+            else -> Result("debug status | debug jankreset | crashlog | crumbs | jank")
         }
     }
 
@@ -668,7 +741,8 @@ class OpsTerminalEngine(private val context: Context) {
 
     companion object {
         val QUICK_CHIPS = listOf(
-            "help", "status", "harden", "firewall", "privacy", "perf", "wifi", "ble", "cyd", "guard", "update", "dns", "agent", "clear"
+            "help", "status", "harden", "firewall", "privacy", "perf", "wifi", "ble", "cyd",
+            "guard", "update", "crashlog", "crumbs", "jank", "debug", "dns", "agent", "clear"
         )
 
         private val HELP = """
@@ -694,6 +768,10 @@ class OpsTerminalEngine(private val context: Context) {
               cyd vault     list local vault files
               guard         open local Guardian
               update        check GitHub Releases over Wi‑Fi
+              crashlog      last crash/hang report (list|clear|test)
+              crumbs        breadcrumb trail
+              jank          frame jank summary
+              debug         debug stack status
               ports <ip>    danger-port probe host
               ping <host>   TCP reachability
               dns           Private DNS playbook

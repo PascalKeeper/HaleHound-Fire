@@ -9,6 +9,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.halehoundforge.fire.databinding.FragmentGuardianBinding
+import com.halehoundforge.fire.debug.Breadcrumbs
+import com.halehoundforge.fire.debug.CrashGuard
 import com.halehoundforge.fire.guardian.NetworkGuardianEngine
 
 /**
@@ -29,10 +31,16 @@ class GuardianFragment : Fragment(), NetworkGuardianEngine.Listener {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        engine = NetworkGuardianEngine(requireContext().applicationContext).also { eng ->
-            eng.addListener(this)
-            eng.getPreferredSsid()?.let { _binding?.preferredSsid?.setText(it) }
-            eng.start(viewLifecycleOwner.lifecycleScope)
+        Breadcrumbs.nav("GuardianFragment")
+        try {
+            engine = NetworkGuardianEngine(requireContext().applicationContext).also { eng ->
+                eng.addListener(this)
+                eng.getPreferredSsid()?.let { _binding?.preferredSsid?.setText(it) }
+                eng.start(viewLifecycleOwner.lifecycleScope)
+            }
+        } catch (e: Exception) {
+            CrashGuard.recordNonFatal("guardian_start", e)
+            _binding?.predictiveStatus?.text = "Guardian start failed: ${e.message}"
         }
 
         binding.btnSetPreferred.setOnClickListener {

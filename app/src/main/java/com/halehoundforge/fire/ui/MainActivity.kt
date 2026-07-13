@@ -8,6 +8,8 @@ import com.halehoundforge.fire.BuildConfig
 import com.halehoundforge.fire.R
 import com.halehoundforge.fire.core.ValhallaStore
 import com.halehoundforge.fire.databinding.ActivityMainBinding
+import com.halehoundforge.fire.debug.Breadcrumbs
+import com.halehoundforge.fire.debug.HangWatchdog
 import com.halehoundforge.fire.ui.fragments.AboutFragment
 import com.halehoundforge.fire.ui.fragments.BleFragment
 import com.halehoundforge.fire.ui.fragments.CydFragment
@@ -31,6 +33,8 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Breadcrumbs.nav("MainActivity.onCreate")
+        HangWatchdog.poke("main_create")
 
         binding.root.findViewById<TextView>(R.id.headerVersion)?.text =
             "v${BuildConfig.VERSION_NAME.substringBefore("-")}"
@@ -42,14 +46,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.bottomNav.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_home -> open(HomeFragment())
-                R.id.nav_harden -> open(HardenFragment())
-                R.id.nav_guard -> open(GuardianFragment())
-                R.id.nav_term -> open(TerminalFragment())
-                R.id.nav_cyd -> open(CydFragment())
+            val name = when (item.itemId) {
+                R.id.nav_home -> "home".also { open(HomeFragment()) }
+                R.id.nav_harden -> "harden".also { open(HardenFragment()) }
+                R.id.nav_guard -> "guard".also { open(GuardianFragment()) }
+                R.id.nav_term -> "term".also { open(TerminalFragment()) }
+                R.id.nav_cyd -> "cyd".also { open(CydFragment()) }
                 else -> return@setOnItemSelectedListener false
             }
+            Breadcrumbs.nav("tab:$name")
+            HangWatchdog.poke("tab:$name")
             true
         }
     }
@@ -85,8 +91,14 @@ class MainActivity : AppCompatActivity() {
         if (isFinishing || isDestroyed) return
         // commitAllowingStateLoss: bottom-nav swaps during/after lifecycle events
         // must not IllegalStateException → silent process death on Fire OS.
+        Breadcrumbs.nav("open:${fragment.javaClass.simpleName}")
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
             .commitAllowingStateLoss()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        HangWatchdog.poke("main_resume")
     }
 }
