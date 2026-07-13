@@ -1,0 +1,5 @@
+# Fire tablet profile: WEB + OPS ONLY
+# KEEP: Silk (cloud9), WebView, firelauncher, Settings, OTA, HaleHound Fire
+# GONE: Kindle, Audible, games/media AOSP, Office, themes, Alexa remnants, shop
+# Re-run: .\tools\fire-debloat-optimize.ps1 apply
+# Then run aggressive pass already applied live on device 2026-07-12
