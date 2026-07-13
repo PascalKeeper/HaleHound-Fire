@@ -11,11 +11,31 @@
 > The CYD stays the **radio edge** (tight flash/RAM, multi-protocol TX/RX).  
 > The Fire is the **debug / storage / operator plane** — more screen, disk, and compute for long sessions and future telemetry/loot analysis.
 
-**Status:** v1.1.0 · independent community project · MIT · [NOTICE.md](NOTICE.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [PRIVACY.md](PRIVACY.md) · [HARDWARE_ANTENNA.md](HARDWARE_ANTENNA.md)
+**Status:** v1.1.1 · independent community project · MIT · [NOTICE.md](NOTICE.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [PRIVACY.md](PRIVACY.md) · [HARDWARE_ANTENNA.md](HARDWARE_ANTENNA.md)
 
 **Authors of this companion:** [PascalKeeper](https://github.com/PascalKeeper) / Joseph Peransi  
 
 **Official HaleHound CYD:** [@JesseCHale](https://github.com/JesseCHale) · [HaleHound-CYD](https://github.com/JesseCHale/HaleHound-CYD) · [flash.halehound.com](https://flash.halehound.com)
+
+---
+
+## Screenshots (Fire 7 ship)
+
+Real device captures from **Fire 7 12th gen (`KFQUWI`)** — not stock photography.
+
+<p align="center">
+  <img src="docs/screenshots/01-arsenal-fire7.png" alt="HaleHound Fire — Arsenal on Fire 7" width="320" />
+</p>
+
+<p align="center"><em>Arsenal home · Blue Team mode · honest CYD-locked tiles · capability matrix</em></p>
+
+Refresh multi-tab gallery (HARDEN · GUARD · TERM · CYD) with tablet on USB:
+
+```powershell
+.\tools\capture-ship-screens.ps1
+```
+
+Gallery notes: [docs/screenshots/README.md](docs/screenshots/README.md)
 
 ---
 
