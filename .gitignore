@@ -1,0 +1,39 @@
+# Android / Gradle
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+bin/
+gen/
+out/
+app/build/
+app/release/
+
+# Kotlin
+.kotlin/
+
+# Secrets / local
+*.keystore
+*.jks
+local.properties
+secrets.properties
+
+# OS / editor
+Thumbs.db
+.vscode/
+*.swp
+*~
+
+# Logs / temp
+*.log
+*.tmp

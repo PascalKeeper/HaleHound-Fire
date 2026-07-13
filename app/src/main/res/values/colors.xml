@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="hh_bg">#0B0F14</color>
+    <color name="hh_surface">#141B24</color>
+    <color name="hh_surface2">#1C2633</color>
+    <color name="hh_border">#2A384A</color>
+    <color name="hh_text">#E8EEF7</color>
+    <color name="hh_muted">#8B9BB0</color>
+    <color name="hh_accent">#F0A500</color>
+    <color name="hh_accent_dim">#B37A00</color>
+    <color name="hh_danger">#E85D5D</color>
+    <color name="hh_ok">#3DDC97</color>
+    <color name="hh_info">#4DA3FF</color>
+    <color name="hh_chip">#243041</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+</resources>

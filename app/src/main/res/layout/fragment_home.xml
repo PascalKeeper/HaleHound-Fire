@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/hh_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="HaleHound Fire"
+            android:textColor="@color/hh_accent"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/passive_only"
+            android:textColor="@color/hh_muted"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/hostInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_card"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="3dp"
+            android:padding="14dp"
+            android:textColor="@color/hh_text"
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Capability matrix"
+            android:textColor="@color/hh_text"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/capabilityMatrix"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_card"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="3dp"
+            android:padding="14dp"
+            android:textColor="@color/hh_text"
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Architecture"
+            android:textColor="@color/hh_text"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_card"
+            android:lineSpacingExtra="4dp"
+            android:padding="14dp"
+            android:text="This is NOT ESP32 firmware running on Fire OS.\n\nLayer A — Fire tablet (this app): passive Wi‑Fi/BLE survey, docs, CYD remote UI.\nLayer B — ESP32 CYD: full HaleHound radios (Wi‑Fi TX attacks, CC1101, NRF24, PN532, GPS).\n\nv0.1 ships Layer A Blue Team. Pair a CYD for the full arsenal."
+            android:textColor="@color/hh_muted"
+            android:textSize="13sp" />
+    </LinearLayout>
+</ScrollView>
