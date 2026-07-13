@@ -14,18 +14,25 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.halehoundforge.fire.databinding.FragmentHardenBinding
+import com.halehoundforge.fire.hardening.FirewallBatchGenerator
 import com.halehoundforge.fire.hardening.HardeningEngine
 import com.halehoundforge.fire.hardening.HardeningKnowledge
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 /**
  * On-the-go network hardening console — knowledge from local Windows harden/optim stack.
+ * Generates Windows netsh .bat for PC apply (Fire cannot run netsh itself).
  */
 class HardenFragment : Fragment() {
 
     private var _binding: FragmentHardenBinding? = null
     private val binding get() = _binding!!
     private var lastReport: String = ""
+    private var lastAudit: HardeningEngine.AuditResult? = null
+    private var lastBatPath: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentHardenBinding.inflate(inflater, container, false)
@@ -48,6 +55,7 @@ class HardenFragment : Fragment() {
 
         binding.btnAudit.setOnClickListener { runAudit() }
         binding.btnCopyReport.setOnClickListener { copyReport() }
+        binding.btnGenFirewallBat.setOnClickListener { genFirewallBat() }
         binding.btnWifiSettings.setOnClickListener {
             try {
                 startActivity(Intent(Settings.ACTION_WIFI_SETTINGS))
@@ -56,7 +64,6 @@ class HardenFragment : Fragment() {
             }
         }
         binding.btnDnsSettings.setOnClickListener {
-            // Private DNS settings (Android 9+); Fire may land on general settings
             val intents = listOf(
                 Intent("android.settings.WIRELESS_SETTINGS"),
                 Intent(Settings.ACTION_WIRELESS_SETTINGS),
@@ -92,6 +99,7 @@ class HardenFragment : Fragment() {
             try {
                 val result = HardeningEngine(requireContext().applicationContext)
                     .runFullAudit(extraHosts = if (extra.isBlank()) emptyList() else listOf(extra))
+                lastAudit = result
                 lastReport = result.reportText
 
                 binding.scoreBanner.text = "SCORE ${result.score}/100 · ${result.grade}"
@@ -143,6 +151,9 @@ class HardenFragment : Fragment() {
                     HardeningKnowledge.dnsProfiles.forEach {
                         appendLine("  ${it.name}: ${it.primary} / ${it.secondary}")
                     }
+                    appendLine()
+                    appendLine("WINDOWS FIREWALL: tap GEN WINDOWS FIREWALL .BAT")
+                    appendLine("  → saves netsh script · pull to PC · Run as Admin")
                 }.trimEnd()
 
                 Toast.makeText(requireContext(), "Audit complete · ${result.score}/100", Toast.LENGTH_SHORT).show()
@@ -164,6 +175,63 @@ class HardenFragment : Fragment() {
         val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         cm.setPrimaryClip(ClipData.newPlainText("halehound-harden-report", lastReport))
         Toast.makeText(requireContext(), "Report copied to clipboard", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun genFirewallBat() {
+        binding.btnGenFirewallBat.isEnabled = false
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val audit = lastAudit
+                val openPorts = audit?.portHits?.filter { it.open }?.map { it.port }?.distinct() ?: emptyList()
+                val bat = FirewallBatchGenerator.generate(
+                    FirewallBatchGenerator.Options(
+                        includeBaselineBlocks = true,
+                        includeGamingAllowHints = true,
+                        openPortsFromAudit = openPorts,
+                        reportScore = audit?.score,
+                        reportGrade = audit?.grade
+                    )
+                )
+
+                val path = withContext(Dispatchers.IO) {
+                    writeBatFiles(bat)
+                }
+                lastBatPath = path
+
+                val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                cm.setPrimaryClip(ClipData.newPlainText("hhf-firewall.bat", bat))
+
+                binding.firewallBatHint.text = buildString {
+                    appendLine("SAVED + COPIED Windows netsh .bat")
+                    appendLine(path)
+                    appendLine()
+                    appendLine("On PC (USB):")
+                    appendLine("  adb pull \"$path\" .")
+                    appendLine("  Right-click → Run as administrator")
+                    appendLine()
+                    appendLine("Or repo fallback:")
+                    appendLine("  tools\\hhf-firewall-baseline.bat")
+                    appendLine("Undo: tools\\hhf-firewall-undo.bat")
+                }.trimEnd()
+
+                Toast.makeText(requireContext(), "Firewall .bat saved + clipboard", Toast.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Gen failed: ${e.message}", Toast.LENGTH_LONG).show()
+                binding.firewallBatHint.text = "Gen failed: ${e.message}"
+            } finally {
+                binding.btnGenFirewallBat.isEnabled = true
+            }
+        }
+    }
+
+    private fun writeBatFiles(bat: String): String {
+        val dir = requireContext().getExternalFilesDir(null)
+            ?: requireContext().filesDir
+        val out = File(dir, "HHF_firewall_harden.bat")
+        out.writeText(bat)
+        // also undo next to it for convenience
+        File(dir, "HHF_firewall_undo.bat").writeText(FirewallBatchGenerator.undoBatch())
+        return out.absolutePath
     }
 
     override fun onDestroyView() {

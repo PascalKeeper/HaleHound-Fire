@@ -5,8 +5,10 @@ import android.content.Context
 import com.halehoundforge.fire.BuildConfig
 import com.halehoundforge.fire.companion.CydDiscovery
 import com.halehoundforge.fire.core.DeviceProfile
+import com.halehoundforge.fire.hardening.FirewallBatchGenerator
 import com.halehoundforge.fire.hardening.HardeningEngine
 import com.halehoundforge.fire.hardening.HardeningKnowledge
+import java.io.File
 import com.halehoundforge.fire.radio.BleSurvey
 import com.halehoundforge.fire.radio.WifiSurvey
 import kotlinx.coroutines.Dispatchers
@@ -53,6 +55,7 @@ class OpsTerminalEngine(private val context: Context) {
                 )
                 "status", "whoami", "device", "info" -> Result(statusBlock())
                 "harden", "audit", "score" -> runHarden()
+                "firewall", "fw", "netsh", "bat" -> runFirewallBat()
                 "wifi", "wlanscan", "scanwifi" -> runWifi()
                 "ble", "blescan" -> runBle()
                 "cyd", "discover" -> runCyd()
@@ -146,8 +149,48 @@ class OpsTerminalEngine(private val context: Context) {
                 else open.take(15).forEach {
                     appendLine("${it.host}:${it.port} ${it.name} [${it.risk}]")
                 }
+                appendLine("Tip: firewall  → write Windows netsh .bat")
             }.trimEnd(),
             navigate = null
+        )
+    }
+
+    private suspend fun runFirewallBat(): Result = withContext(Dispatchers.IO) {
+        val audit = try {
+            HardeningEngine(context).runFullAudit()
+        } catch (_: Exception) {
+            null
+        }
+        val open = audit?.portHits?.filter { it.open }?.map { it.port }?.distinct() ?: emptyList()
+        val bat = FirewallBatchGenerator.generate(
+            FirewallBatchGenerator.Options(
+                includeBaselineBlocks = true,
+                includeGamingAllowHints = true,
+                openPortsFromAudit = open,
+                reportScore = audit?.score,
+                reportGrade = audit?.grade
+            )
+        )
+        val dir = context.getExternalFilesDir(null) ?: context.filesDir
+        val out = File(dir, "HHF_firewall_harden.bat")
+        out.writeText(bat)
+        File(dir, "HHF_firewall_undo.bat").writeText(FirewallBatchGenerator.undoBatch())
+        Result(
+            buildString {
+                appendLine("═══ WINDOWS FIREWALL .BAT ═══")
+                appendLine("Wrote netsh block script (cannot run netsh on Fire).")
+                appendLine(out.absolutePath)
+                appendLine()
+                appendLine("PC:")
+                appendLine("  adb pull \"${out.absolutePath}\" .")
+                appendLine("  Right-click HHF_firewall_harden.bat → Run as administrator")
+                appendLine("Or: tools\\hhf-firewall-baseline.bat")
+                appendLine("Undo: tools\\hhf-firewall-undo.bat")
+                if (open.isNotEmpty()) {
+                    appendLine()
+                    appendLine("Audit open ports folded in: ${open.joinToString(",")}")
+                }
+            }.trimEnd()
         )
     }
 
@@ -357,7 +400,7 @@ class OpsTerminalEngine(private val context: Context) {
 
     companion object {
         val QUICK_CHIPS = listOf(
-            "help", "status", "harden", "wifi", "ble", "cyd", "guard", "dns", "agent", "clear"
+            "help", "status", "harden", "firewall", "wifi", "ble", "cyd", "guard", "dns", "agent", "clear"
         )
 
         private val HELP = """
@@ -374,6 +417,7 @@ class OpsTerminalEngine(private val context: Context) {
 
             ARSENAL (runs on this tablet)
               harden        full harden audit + score
+              firewall      gen Windows netsh .bat (PC apply)
               wifi          passive Wi‑Fi survey
               ble           BLE advertisement survey
               cyd           discover CYD softAP

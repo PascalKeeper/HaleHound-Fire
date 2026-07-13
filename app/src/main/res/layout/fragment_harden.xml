@@ -176,7 +176,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:layout_marginBottom="10dp"
             android:text="COPY HARDEN REPORT" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGenFirewallBat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="GEN WINDOWS FIREWALL .BAT" />
+
+        <TextView
+            android:id="@+id/firewallBatHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="10dp"
+            android:fontFamily="monospace"
+            android:text="Writes netsh block rules .bat (Secure Firewall Ports kit). Copy + save on Fire; pull to PC and Run as Admin."
+            android:textColor="@color/cyd_text_muted"
+            android:textSize="9sp" />
     </LinearLayout>
 </ScrollView>
+
