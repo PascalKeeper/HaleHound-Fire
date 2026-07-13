@@ -29,8 +29,22 @@ function Invoke-FireAdb {
     & $script:Adb @CmdArgs
 }
 
+# KEEP — surfing the net + tablet alive (NEVER disable)
+$Keep = @(
+    "com.amazon.cloud9",                 # Silk browser
+    "com.amazon.webview.chromium",       # WebView for Silk
+    "com.amazon.cloud9.contentservice",  # Silk content helper
+    "com.amazon.firelauncher",
+    "com.amazon.settings",
+    "com.amazon.settings.systemupdates",
+    "com.amazon.device.software.ota",
+    "com.amazon.storagemanager",
+    "com.amazon.systemui.overlay",
+    "com.amazon.systemui.overlay.framework"
+)
+
 # Soft-disable only (pm disable-user). Reversible with undo.
-# NEVER: firelauncher, settings, OTA, packageinstaller, systemui, keyboard
+# Goal: browse the web; everything else Amazon-crap goes.
 $Bloat = @(
     "com.amazon.client.metrics",
     "com.amazon.device.metrics",
@@ -47,8 +61,18 @@ $Bloat = @(
     "com.amazon.avod",
     "com.amazon.weather",
     "com.amazon.dee.app",
+    "com.amazon.dee.alexaonandroidos",
     "com.amazon.logan",
     "com.amazon.kindle.kso",
+    "com.amazon.kindle",                 # reader — not required to surf
+    "com.audible.application.kindle",
+    "com.amazon.wallpaper",
+    "com.amazon.afe.app",
+    "com.amazon.dpcclient",
+    "com.amazon.switchaccess.root",
+    "com.amazon.android.marketplace",
+    "com.amazon.appaccesskeyprovider",
+    "com.amazon.platform.fdra",
     "com.amazon.hedwig",
     "com.amazon.tahoe",
     "com.amazon.accessorynotifier",
@@ -97,8 +121,7 @@ $Bloat = @(
     "com.amazon.appverification",
     "com.amazon.device.software.ota.override",
     "com.amazon.legalsettings",
-    "com.amazon.cloud9.kids",
-    "com.amazon.cloud9.contentservice",
+    "com.amazon.cloud9.kids",            # kids silk — adult Silk kept
     "com.amazon.neodelegate",
     "com.amazon.neopactservice",
     "com.amazon.providers.contentsupport",
@@ -128,7 +151,7 @@ $Bloat = @(
     "com.amazon.speakscreen",
     "com.amazon.gamebox",
     "com.amazon.kor.demo"
-) | Select-Object -Unique
+) | Where-Object { $Keep -notcontains $_ } | Select-Object -Unique
 
 function Get-Bench {
     $o = [ordered]@{}
@@ -217,9 +240,20 @@ switch ($Action) {
         Invoke-FireAdb shell pm trim-caches 512M 2>&1 | Out-Null
 
         Write-Host ""
-        Write-Host "[4/4] Force-stop disabled packages..." -ForegroundColor Yellow
+        Write-Host "[4/5] Force-stop disabled packages..." -ForegroundColor Yellow
         foreach ($p in $Bloat) {
             Invoke-FireAdb shell am force-stop $p 2>$null | Out-Null
+        }
+
+        Write-Host ""
+        Write-Host "[5/5] Ensure Silk browser stack ENABLED (surf the net)..." -ForegroundColor Yellow
+        foreach ($p in @(
+            "com.amazon.cloud9",
+            "com.amazon.webview.chromium",
+            "com.amazon.cloud9.contentservice"
+        )) {
+            $r = (Invoke-FireAdb shell pm enable $p 2>&1 | Out-String).Trim()
+            Write-Host "  $r"
         }
 
         Start-Sleep -Seconds 3
@@ -240,7 +274,8 @@ switch ($Action) {
         Write-Host ""
         Write-Host "Log: $log" -ForegroundColor Cyan
         Write-Host "Undo: .\tools\fire-debloat-optimize.ps1 undo" -ForegroundColor Cyan
-        Write-Host "Left alone: Silk (cloud9), Kindle reader, firelauncher, OTA/settings." -ForegroundColor DarkGray
+        Write-Host "KEPT for web: Silk + WebView + content service. Launcher/Settings/OTA intact." -ForegroundColor Green
+        Write-Host "GONE (if allowed): Kindle, Audible, Video, Music, Shop, Alexa, ads, kids bloat..." -ForegroundColor DarkGray
     }
     "undo" {
         Assert-Device
