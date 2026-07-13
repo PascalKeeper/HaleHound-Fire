@@ -265,12 +265,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:layout_marginBottom="8dp"
             android:background="@drawable/bg_cyd_panel"
             android:fontFamily="monospace"
             android:lineSpacingExtra="2dp"
             android:padding="10dp"
             android:textColor="@color/cyd_text_dim"
             android:textSize="9sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_cyd_panel"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="3dp"
+            android:padding="10dp"
+            android:text="WHY FIRE + CYD\nCYD = radio edge (tight flash/RAM/UI).\nFire = debug plane (disk, compute, large UI).\nFuture: telemetry · loot pull · serial console.\nRadios never leave the CYD."
+            android:textColor="@color/cyd_text_dim"
+            android:textSize="10sp" />
     </LinearLayout>
 </ScrollView>
