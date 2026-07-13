@@ -23,20 +23,29 @@ import kotlinx.coroutines.launch
 import java.net.Inet4Address
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.text.SimpleDateFormat
 import java.util.ArrayDeque
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
 
 /**
- * Blue Team Network Guardian engine for stock Fire OS.
+ * Fully on-device Blue Team Wi‑Fi Guardian for stock Fire OS.
  *
- * Ported concepts from:
- * - F:\imonlinegaming\NetworkMonitor_v2 (bandwidth, predictive latency/jitter, deauth radar UI)
- * - Documents\WiFiGuardianKiller.ps1 + WifiGuard.ps1 (disconnect storm / SSID lock heuristics)
- * - HaleHound CYD "WiFi Guardian" (defensive deauth flood awareness — approximated on Fire)
+ * NO laptop, NO Npcap, NO raw 802.11. Everything uses Android public APIs only.
  *
- * Stock Fire OS CANNOT sniff Dot11Deauth frames (no monitor mode). We approximate
- * jamming/deauth pressure via rapid Supplicant disconnects + latency collapse.
+ * Stock Fire OS cannot capture Dot11Deauth management frames (no monitor mode).
+ * We approximate deauth/jam *pressure* via multi-signal fusion:
+ *  - Supplicant disconnect / inactive storms
+ *  - ConnectivityManager network lost
+ *  - RSSI cliffs (sudden dBm drop)
+ *  - Link-speed collapse
+ *  - Gateway latency / jitter / timeouts
+ *  - BSSID churn (forced roam / AP thrash)
+ *  - Preferred-SSID lock (WiFiGuardianKiller-style)
+ *
+ * True frame-level Guardian still requires a HaleHound CYD (or other monitor radio).
  */
 class NetworkGuardianEngine(private val context: Context) {
 
@@ -62,7 +71,9 @@ class NetworkGuardianEngine(private val context: Context) {
         val mitigation: String,
         val alerts: List<String>,
         val preferredSsid: String?,
-        val ssidLockAlert: Boolean
+        val ssidLockAlert: Boolean,
+        val modeLabel: String,
+        val signals: String
     )
 
     enum class Level { STABLE, WATCH, HIGH, CRITICAL }
@@ -75,15 +86,19 @@ class NetworkGuardianEngine(private val context: Context) {
     private val cm = context.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     private val listeners = CopyOnWriteArrayList<Listener>()
-    private val alerts = ArrayDeque<String>(20)
+    private val alerts = ArrayDeque<String>(40)
     private val latencyHistory = ArrayDeque<Int>(30)
     private val jitterHistory = ArrayDeque<Int>(10)
     private val disconnectTimestamps = ArrayDeque<Long>(50)
+    private val rssiHistory = ArrayDeque<Pair<Long, Int>>(40)
 
     private var job: Job? = null
     private var lastLatency = -1
     private var packetDrops = 0
     private var disconnectEvents = 0
+    private var rssiCliffEvents = 0
+    private var bssidChurnEvents = 0
+    private var linkCollapseEvents = 0
     private var lastTxBytes = -1L
     private var lastRxBytes = -1L
     private var lastBwTime = 0L
@@ -91,23 +106,39 @@ class NetworkGuardianEngine(private val context: Context) {
     private var rxMbps = 0.0
     private var preferredSsid: String? = null
     private var running = false
+    private var lastBssid: String? = null
+    private var lastLinkMbps: Int = -1
+    private var lastRssiSample: Int = -127
 
     private val wifiReceiver = object : BroadcastReceiver() {
         override fun onReceive(ctx: Context?, intent: Intent?) {
             when (intent?.action) {
                 WifiManager.NETWORK_STATE_CHANGED_ACTION,
                 WifiManager.SUPPLICANT_STATE_CHANGED_ACTION -> {
+                    @Suppress("DEPRECATION")
                     val info = wifi.connectionInfo
                     val state = info?.supplicantState
                     if (state == SupplicantState.DISCONNECTED ||
                         state == SupplicantState.INACTIVE ||
-                        state == SupplicantState.INTERFACE_DISABLED
+                        state == SupplicantState.INTERFACE_DISABLED ||
+                        state == SupplicantState.SCANNING
                     ) {
-                        onDisconnectHeuristic("supplicant=$state")
+                        // scanning alone is soft; only hard-fail states count heavy
+                        if (state != SupplicantState.SCANNING) {
+                            onDisconnectHeuristic("supplicant=$state")
+                        }
+                    }
+                    if (state == SupplicantState.FOUR_WAY_HANDSHAKE ||
+                        state == SupplicantState.GROUP_HANDSHAKE ||
+                        state == SupplicantState.ASSOCIATING ||
+                        state == SupplicantState.AUTHENTICATING
+                    ) {
+                        // reauth churn can indicate deauth-then-reconnect
+                        pushAlert("REAUTH churn: $state (possible deauth recovery)")
                     }
                 }
                 WifiManager.RSSI_CHANGED_ACTION -> {
-                    // handled in poll loop
+                    // polled; receiver just keeps us warm
                 }
             }
         }
@@ -116,6 +147,16 @@ class NetworkGuardianEngine(private val context: Context) {
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onLost(network: Network) {
             onDisconnectHeuristic("network_lost")
+        }
+
+        override fun onUnavailable() {
+            onDisconnectHeuristic("network_unavailable")
+        }
+
+        override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
+            if (!caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
+                pushAlert("Path unvalidated — captive/portal or broken uplink")
+            }
         }
     }
 
@@ -147,17 +188,16 @@ class NetworkGuardianEngine(private val context: Context) {
         } catch (_: Exception) {
         }
 
-        // Seed bandwidth counters
-        val uid = android.os.Process.myUid()
-        lastTxBytes = TrafficStats.getTotalTxBytes().takeIf { it >= 0 }
-            ?: TrafficStats.getUidTxBytes(uid)
-        lastRxBytes = TrafficStats.getTotalRxBytes().takeIf { it >= 0 }
-            ?: TrafficStats.getUidRxBytes(uid)
+        lastTxBytes = TrafficStats.getTotalTxBytes()
+        lastRxBytes = TrafficStats.getTotalRxBytes()
         lastBwTime = SystemClock.elapsedRealtime()
+
+        pushAlert("LOCAL Guardian online — fully on-device (no laptop)")
 
         job = scope.launch(Dispatchers.Default) {
             while (isActive && running) {
                 sampleBandwidth()
+                sampleRadioDynamics()
                 val lat = probeGatewayLatency()
                 updateLatencyStats(lat)
                 val snap = buildSnapshot()
@@ -181,6 +221,19 @@ class NetworkGuardianEngine(private val context: Context) {
         }
     }
 
+    private fun nowStamp(): String =
+        SimpleDateFormat("HH:mm:ss", Locale.US).format(Date())
+
+    private fun pushAlert(msg: String) {
+        val line = "[${nowStamp()}] $msg"
+        synchronized(alerts) {
+            // de-dupe identical consecutive lines
+            if (alerts.lastOrNull() == line) return
+            if (alerts.size >= 36) alerts.removeFirst()
+            alerts.addLast(line)
+        }
+    }
+
     private fun onDisconnectHeuristic(reason: String) {
         val now = SystemClock.elapsedRealtime()
         disconnectEvents++
@@ -188,21 +241,52 @@ class NetworkGuardianEngine(private val context: Context) {
         while (disconnectTimestamps.isNotEmpty() && now - disconnectTimestamps.first() > 60_000L) {
             disconnectTimestamps.removeFirst()
         }
-        // Rapid disconnects in 30s window ≈ storm
         val recent = disconnectTimestamps.count { now - it <= 30_000L }
         if (recent >= 2) {
-            pushAlert("DISCONNECT STORM x$recent in 30s ($reason) — possible deauth/jam pressure")
+            pushAlert("DISCONNECT STORM x$recent /30s ($reason) — deauth/jam pressure?")
         } else {
             pushAlert("Link drop: $reason")
         }
     }
 
-    private fun pushAlert(msg: String) {
-        val line = "[${java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US).format(java.util.Date())}] $msg"
-        synchronized(alerts) {
-            if (alerts.size >= 18) alerts.removeFirst()
-            alerts.addLast(line)
+    @Suppress("DEPRECATION")
+    private fun sampleRadioDynamics() {
+        val info = wifi.connectionInfo ?: return
+        val rssi = info.rssi
+        val bssid = info.bssid
+        val link = info.linkSpeed
+        val now = SystemClock.elapsedRealtime()
+
+        rssiHistory.addLast(now to rssi)
+        while (rssiHistory.isNotEmpty() && now - rssiHistory.first().first > 20_000L) {
+            rssiHistory.removeFirst()
         }
+
+        // RSSI cliff: ≥18 dB drop within 8s while still associated
+        if (lastRssiSample > -120 && rssi > -120) {
+            val drop = lastRssiSample - rssi
+            if (drop >= 18 && info.networkId != -1) {
+                rssiCliffEvents++
+                pushAlert("RSSI CLIFF ${lastRssiSample}→${rssi} dBm (Δ$drop) — interference/deauth?")
+            }
+        }
+        lastRssiSample = rssi
+
+        // BSSID churn while same SSID
+        if (bssid != null && bssid != "00:00:00:00:00:00" && lastBssid != null &&
+            lastBssid != bssid && info.networkId != -1
+        ) {
+            bssidChurnEvents++
+            pushAlert("BSSID CHURN $lastBssid → $bssid (forced roam / thrash?)")
+        }
+        if (bssid != null) lastBssid = bssid
+
+        // Link speed collapse
+        if (lastLinkMbps > 0 && link > 0 && lastLinkMbps >= 72 && link <= 12) {
+            linkCollapseEvents++
+            pushAlert("LINK COLLAPSE ${lastLinkMbps}→${link} Mbps")
+        }
+        if (link > 0) lastLinkMbps = link
     }
 
     private fun sampleBandwidth() {
@@ -224,17 +308,12 @@ class NetworkGuardianEngine(private val context: Context) {
         val gw = resolveGateway() ?: return -1
         return try {
             val start = SystemClock.elapsedRealtime()
-            Socket().use { sock ->
-                sock.connect(InetSocketAddress(gw, 80), 800)
-            }
+            Socket().use { sock -> sock.connect(InetSocketAddress(gw, 80), 800) }
             (SystemClock.elapsedRealtime() - start).toInt().coerceAtLeast(1)
         } catch (_: Exception) {
-            // Fallback: try common DNS over TCP
             try {
                 val start = SystemClock.elapsedRealtime()
-                Socket().use { sock ->
-                    sock.connect(InetSocketAddress(gw, 53), 800)
-                }
+                Socket().use { sock -> sock.connect(InetSocketAddress(gw, 53), 800) }
                 (SystemClock.elapsedRealtime() - start).toInt().coerceAtLeast(1)
             } catch (_: Exception) {
                 -1
@@ -271,7 +350,6 @@ class NetworkGuardianEngine(private val context: Context) {
             }
         } catch (_: Exception) {
         }
-        // WifiManager DHCP fallback
         @Suppress("DEPRECATION")
         val dhcp = wifi.dhcpInfo
         if (dhcp != null && dhcp.gateway != 0) {
@@ -303,52 +381,61 @@ class NetworkGuardianEngine(private val context: Context) {
 
         val now = SystemClock.elapsedRealtime()
         val stormWindow = disconnectTimestamps.count { now - it <= 30_000L }
-        val stormScore = (stormWindow * 25).coerceAtMost(100) +
-            if (rssi in -100..-80) 15 else 0
 
-        val recent = latencyHistory.toList().takeLast(5)
-        val timeouts = recent.count { it == 9999 }
+        // Multi-signal storm score (0-100) — fully local
+        var score = 0
+        score += (stormWindow * 22).coerceAtMost(55)
+        score += (rssiCliffEvents.coerceAtMost(3) * 8)
+        score += (bssidChurnEvents.coerceAtMost(3) * 6)
+        score += (linkCollapseEvents.coerceAtMost(2) * 5)
+        if (rssi in -100..-82) score += 10
+        val recentLat = latencyHistory.toList().takeLast(5)
+        val timeouts = recentLat.count { it == 9999 }
+        score += timeouts * 10
+        score = score.coerceAtMost(100)
+
         val avgJitter = if (jitterHistory.isEmpty()) 0.0 else jitterHistory.average()
-        val avgLat = recent.filter { it != 9999 }.let { if (it.isEmpty()) 0.0 else it.average() }
+        val avgLat = recentLat.filter { it != 9999 }.let { if (it.isEmpty()) 0.0 else it.average() }
 
         val (status, level) = when {
-            !connected || timeouts >= 3 ->
-                "CRITICAL: DISCONNECTED / HIGH LOSS" to Level.CRITICAL
-            stormWindow >= 3 ->
-                "HIGH RISK: Disconnect storm (possible deauth/jam)" to Level.HIGH
-            timeouts > 0 ->
-                "HIGH RISK: Signal degradation (${timeouts * 20}% drop window)" to Level.HIGH
-            avgJitter > 120 ->
-                "MODERATE: Unstable jitter (${"%.0f".format(avgJitter)}ms)" to Level.WATCH
-            avgLat > 250 ->
-                "WARNING: Latency spikes (${"%.0f".format(avgLat)}ms)" to Level.WATCH
+            !connected || timeouts >= 3 || score >= 80 ->
+                "CRITICAL: link failure / high loss (local sensors)" to Level.CRITICAL
+            stormWindow >= 3 || score >= 55 ->
+                "HIGH: disconnect/RSSI storm — possible deauth pressure" to Level.HIGH
+            timeouts > 0 || avgJitter > 120 || score >= 30 ->
+                "WATCH: degradation (jitter/latency/radio)" to Level.WATCH
             rssi in -100..-82 ->
-                "WATCH: Weak RSSI (${rssi}dBm)" to Level.WATCH
+                "WATCH: weak RSSI (${rssi}dBm)" to Level.WATCH
             else ->
-                "STABLE: Link within nominal tolerances" to Level.STABLE
+                "STABLE: local sensors nominal" to Level.STABLE
         }
 
         val mitigation = when (level) {
             Level.CRITICAL, Level.HIGH ->
-                "MITIGATION: Move closer to AP · enable PMF/802.11w if router supports · prefer 5GHz · " +
-                    "if attacks persist, CYD WiFi Guardian can capture real deauth frames."
+                "LOCAL MITIGATION: move closer to AP · enable PMF/802.11w · prefer 5GHz · " +
+                    "SSID lock + Reconnect. True Dot11 deauth frames need a CYD — not possible on stock Fire OS."
             Level.WATCH ->
-                "Advice: Check congestion / interference · reduce wall obstruction · note AP channel."
+                "Advice: check congestion/walls · note channel · keep Guardian open to log storms."
             Level.STABLE ->
-                "System advice: Operating on secure-looking path. Monitor active (heuristic)."
+                "Fully local Guardian active. No laptop required. Monitor runs on this tablet only."
         }
 
         val pref = preferredSsid
         val lockAlert = pref != null && connected && ssid != pref && ssid != "—"
         if (lockAlert) {
-            // avoid spam: only if last alert not same
             val last = synchronized(alerts) { alerts.lastOrNull() }
             if (last == null || !last.contains("SSID LOCK")) {
-                pushAlert("SSID LOCK: connected to '$ssid' (preferred='$pref')")
+                pushAlert("SSID LOCK: on '$ssid' (want '$pref')")
             }
         }
 
         val alertList = synchronized(alerts) { alerts.toList().asReversed() }
+
+        val signals = buildString {
+            append("drops=$disconnectEvents cliffs=$rssiCliffEvents ")
+            append("churn=$bssidChurnEvents linkCol=$linkCollapseEvents ")
+            append("score=$score")
+        }
 
         return Snapshot(
             ssid = ssid,
@@ -366,13 +453,15 @@ class NetworkGuardianEngine(private val context: Context) {
             jitterMs = avgJitter,
             packetDrops = packetDrops,
             disconnectEvents = disconnectEvents,
-            stormScore = stormScore.coerceAtMost(100),
+            stormScore = score,
             predictiveStatus = status,
             predictiveLevel = level,
             mitigation = mitigation,
             alerts = alertList,
             preferredSsid = pref,
-            ssidLockAlert = lockAlert
+            ssidLockAlert = lockAlert,
+            modeLabel = "FULLY LOCAL · ON-DEVICE",
+            signals = signals
         )
     }
 
@@ -387,10 +476,6 @@ class NetworkGuardianEngine(private val context: Context) {
         )
     }
 
-    /**
-     * Best-effort reconnect (WiFiGuardianKiller-style). Stock Android may ignore
-     * depending on OEM policy; Fire OS often allows reconnect to saved networks.
-     */
     @Suppress("DEPRECATION")
     fun attemptReconnectToPreferred(): String {
         val target = preferredSsid ?: return "No preferred SSID set"

@@ -22,79 +22,27 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/modeBanner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_cyd_banner_blue"
             android:fontFamily="monospace"
-            android:text="local heuristic + windows npcap backend"
-            android:textColor="@color/cyd_text_muted"
-            android:textSize="10sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:fontFamily="monospace"
-            android:text="WINDOWS BACKEND (NPCAP)"
-            android:textColor="@color/cyd_amber"
+            android:gravity="center"
+            android:padding="8dp"
+            android:text="◆ FULLY LOCAL · NO LAPTOP"
+            android:textColor="@color/cyd_cyan"
             android:textSize="11sp"
             android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/backendUrl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:background="@drawable/bg_cyd_input"
-            android:fontFamily="monospace"
-            android:hint="http://172.16.x.x:8765"
-            android:inputType="textUri"
-            android:padding="10dp"
-            android:textColor="@color/cyd_text"
-            android:textColorHint="@color/cyd_text_muted"
-            android:textSize="12sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:orientation="horizontal">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnBackendConnect"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="4dp"
-                android:layout_weight="1"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:text="CONNECT"
-                android:textSize="11sp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnBackendDisconnect"
-                style="@style/Widget.HaleHound.Button.Outline"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="4dp"
-                android:layout_weight="1"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:text="LOCAL ONLY"
-                android:textSize="11sp" />
-        </LinearLayout>
-
         <TextView
-            android:id="@+id/backendStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:background="@drawable/bg_cyd_panel"
             android:fontFamily="monospace"
             android:lineSpacingExtra="2dp"
-            android:padding="10dp"
-            android:text="Backend: offline · local heuristics only"
-            android:textColor="@color/cyd_text_dim"
+            android:text="All sensors run on this Fire tablet. No PC, Npcap, or network backend required.\nDot11 frame capture still needs a CYD — local mode uses OS Wi‑Fi sensors only."
+            android:textColor="@color/cyd_text_muted"
             android:textSize="10sp" />
 
         <TextView
@@ -105,7 +53,7 @@
             android:background="@drawable/bg_cyd_panel"
             android:fontFamily="monospace"
             android:padding="10dp"
-            android:text="Starting…"
+            android:text="Starting local Guardian…"
             android:textColor="@color/cyd_green"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -205,7 +153,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:fontFamily="monospace"
-            android:text="THREAT RADAR"
+            android:text="THREAT RADAR (LOCAL)"
             android:textColor="@color/cyd_red"
             android:textSize="11sp"
             android:textStyle="bold" />
@@ -219,9 +167,9 @@
             android:background="@drawable/bg_cyd_panel"
             android:fontFamily="monospace"
             android:lineSpacingExtra="2dp"
-            android:minHeight="100dp"
+            android:minHeight="120dp"
             android:padding="10dp"
-            android:text="No anomalies yet."
+            android:text="Waiting for local sensor events…"
             android:textColor="@color/cyd_text_dim"
             android:textSize="10sp" />
     </LinearLayout>

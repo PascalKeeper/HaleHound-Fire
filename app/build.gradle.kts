@@ -11,8 +11,8 @@ android {
         applicationId = "com.halehoundforge.fire"
         minSdk = 30
         targetSdk = 34
-        versionCode = 4
-        versionName = "0.4.0-fire"
+        versionCode = 5
+        versionName = "0.5.0-fire"
         // Fire OS 8 / Android 11 (API 30) — KFQUWI Fire 7 12th gen target
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

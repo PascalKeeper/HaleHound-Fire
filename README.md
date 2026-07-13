@@ -90,19 +90,10 @@ We open-sourced this as a **companion**, not a fork of the ESP32 firmware. Offic
 
 MIT — see [LICENSE](LICENSE).
 
-## Windows Guardian Backend (Npcap virtual backend)
+## Fully local Guardian (default)
 
-Real deauth *detection* cannot run on Fire OS. Run the PC backend instead:
+**v0.5+ runs 100% on the Fire tablet** — no laptop, no Npcap, no backend URL.
 
-```text
-windows-backend\start-backend.bat
-adb reverse tcp:8765 tcp:8765
-```
+GUARD uses on-device sensors only: disconnect storms, RSSI cliffs, BSSID churn, link collapse, gateway latency, SSID lock.
 
-On the tablet → **GUARD** → Backend URL `http://127.0.0.1:8765` → **CONNECT**.
-
-- Virtual mode keeps the pipeline alive without RF.
-- Npcap + monitor-capable NIC can deliver live `Dot11Deauth` frames.
-- Blue Team only — detection, no TX.
-
-See `windows-backend/README.md`.
+Stock Fire OS **cannot** capture raw 802.11 deauth frames. For true Dot11 Guardian, use a flashed **HaleHound CYD**. Optional PC backend remains under `windows-backend/` for advanced lab use only.

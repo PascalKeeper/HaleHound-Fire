@@ -54,7 +54,7 @@ object DeviceProfile {
 
         val rows = listOf(
             CapabilityRow("Wi‑Fi survey (passive)", if (wifi) "NATIVE" else "N/A", "optional"),
-            CapabilityRow("Network Guardian (heur.)", if (wifi) "NATIVE" else "N/A", "CYD true frames"),
+            CapabilityRow("Guardian fully local", if (wifi) "NATIVE" else "N/A", "CYD true frames"),
             CapabilityRow("Wi‑Fi deauth / evil twin", "BLOCKED stock OS", "CYD required"),
             CapabilityRow("EAPOL / PMKID capture", "BLOCKED stock OS", "CYD required"),
             CapabilityRow("BLE survey (passive)", if (ble) "NATIVE" else "N/A", "optional"),
