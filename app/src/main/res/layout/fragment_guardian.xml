@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/hh_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Network Guardian"
+            android:textColor="@color/hh_accent"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Blue Team · ported from NetworkMonitor_v2 + WiFi Guardian heuristics"
+            android:textColor="@color/hh_muted"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/predictiveStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_card"
+            android:padding="12dp"
+            android:text="Starting…"
+            android:textColor="@color/hh_text"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/linkBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_card"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp"
+            android:padding="12dp"
+            android:textColor="@color/hh_text"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/bwBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_card"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp"
+            android:padding="12dp"
+            android:textColor="@color/hh_text"
+            android:textSize="11sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="SSID lock (WiFiGuardianKiller-style)"
+            android:textColor="@color/hh_text"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/preferredSsid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_chip"
+            android:hint="Preferred SSID"
+            android:inputType="text"
+            android:padding="10dp"
+            android:textColor="@color/hh_text"
+            android:textColorHint="@color/hh_muted"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSetPreferred"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:text="Set lock"
+                android:textSize="12sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReconnect"
+                style="@style/Widget.HaleHound.Button.Outline"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:text="Reconnect"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/mitigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_card"
+            android:lineSpacingExtra="3dp"
+            android:padding="12dp"
+            android:textColor="@color/hh_muted"
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Threat / disconnect radar"
+            android:textColor="@color/hh_text"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/alertsBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_card"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp"
+            android:minHeight="120dp"
+            android:padding="12dp"
+            android:text="No anomalies yet."
+            android:textColor="@color/hh_muted"
+            android:textSize="11sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="8dp"
+            android:text="Note: True 802.11 deauth frame capture needs monitor mode (Windows Npcap / HaleHound CYD). This tab uses disconnect-storm + latency heuristics on stock Fire OS."
+            android:textColor="@color/hh_muted"
+            android:textSize="10sp" />
+    </LinearLayout>
+</ScrollView>

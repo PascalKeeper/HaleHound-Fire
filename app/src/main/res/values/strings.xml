@@ -7,6 +7,7 @@
     <string name="valhalla_accept">I confirm authorized / legal use</string>
     <string name="valhalla_decline">Decline &amp; exit</string>
     <string name="nav_home">Home</string>
+    <string name="nav_guard">Guard</string>
     <string name="nav_wifi">Wi‑Fi</string>
     <string name="nav_ble">BLE</string>
     <string name="nav_cyd">CYD</string>

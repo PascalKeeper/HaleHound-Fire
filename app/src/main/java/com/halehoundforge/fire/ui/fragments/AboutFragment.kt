@@ -22,7 +22,7 @@ class AboutFragment : Fragment() {
             HaleHound Fire ${BuildConfig.VERSION_NAME}
             Package: ${BuildConfig.APPLICATION_ID}
 
-            First Fire OS port of the HaleHound ecosystem concept.
+            Fire OS companion + Network Guardian (v0.2).
 
             Official HaleHound (ESP32 CYD):
             • https://halehound.com

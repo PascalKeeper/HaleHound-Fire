@@ -76,7 +76,7 @@
             android:background="@drawable/bg_card"
             android:lineSpacingExtra="4dp"
             android:padding="14dp"
-            android:text="This is NOT ESP32 firmware running on Fire OS.\n\nLayer A — Fire tablet (this app): passive Wi‑Fi/BLE survey, docs, CYD remote UI.\nLayer B — ESP32 CYD: full HaleHound radios (Wi‑Fi TX attacks, CC1101, NRF24, PN532, GPS).\n\nv0.1 ships Layer A Blue Team. Pair a CYD for the full arsenal."
+            android:text="This is NOT ESP32 firmware running on Fire OS.\n\nLayer A — Fire tablet: Network Guardian, passive Wi‑Fi/BLE survey, CYD companion.\nLayer B — ESP32 CYD: full radios + true WiFi Guardian deauth frames.\n\nv0.2 ships Guardian heuristics from NetworkMonitor_v2 / WiFiGuardianKiller."
             android:textColor="@color/hh_muted"
             android:textSize="13sp" />
     </LinearLayout>
