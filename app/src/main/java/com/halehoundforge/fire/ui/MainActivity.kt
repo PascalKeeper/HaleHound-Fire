@@ -48,13 +48,14 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_guard -> open(GuardianFragment())
                 R.id.nav_term -> open(TerminalFragment())
                 R.id.nav_cyd -> open(CydFragment())
-                else -> false
+                else -> return@setOnItemSelectedListener false
             }
             true
         }
     }
 
     fun navigateTo(itemId: Int) {
+        if (isFinishing || isDestroyed) return
         if (binding.bottomNav.selectedItemId != itemId) {
             binding.bottomNav.selectedItemId = itemId
         } else {
@@ -69,26 +70,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun openAbout() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragmentContainer, AboutFragment())
-            .commit()
+        open(AboutFragment())
     }
 
     fun openBle() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragmentContainer, BleFragment())
-            .commit()
+        open(BleFragment())
     }
 
     fun openWifi() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragmentContainer, WifiFragment())
-            .commit()
+        open(WifiFragment())
     }
 
     private fun open(fragment: Fragment) {
+        if (isFinishing || isDestroyed) return
+        // commitAllowingStateLoss: bottom-nav swaps during/after lifecycle events
+        // must not IllegalStateException → silent process death on Fire OS.
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
-            .commit()
+            .commitAllowingStateLoss()
     }
 }

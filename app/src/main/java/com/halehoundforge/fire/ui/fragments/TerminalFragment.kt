@@ -20,11 +20,16 @@ import com.halehoundforge.fire.R
 import com.halehoundforge.fire.databinding.FragmentTerminalBinding
 import com.halehoundforge.fire.terminal.OpsTerminalEngine
 import com.halehoundforge.fire.ui.MainActivity
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
  * Human-easy + Grok-friendly ops terminal.
  * Chips for thumbs; full commands for agents; transcript for both.
+ *
+ * Lifecycle-safe: leaving TERM mid-command must not touch destroyed views
+ * (was a silent-exit crash path when swiping to GUARD).
  */
 class TerminalFragment : Fragment() {
 
@@ -32,6 +37,7 @@ class TerminalFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var engine: OpsTerminalEngine
     private val transcript = StringBuilder()
+    private var runJob: Job? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTerminalBinding.inflate(inflater, container, false)
@@ -45,13 +51,13 @@ class TerminalFragment : Fragment() {
         if (transcript.isEmpty()) {
             appendBanner()
         } else {
-            binding.output.text = transcript.toString()
+            _binding?.output?.text = transcript.toString()
         }
 
         binding.btnRun.setOnClickListener { runCurrent() }
         binding.btnClear.setOnClickListener {
             transcript.clear()
-            binding.output.text = ""
+            _binding?.output?.text = ""
             appendBanner()
         }
         binding.btnCopy.setOnClickListener {
@@ -80,7 +86,7 @@ class TerminalFragment : Fragment() {
     }
 
     private fun buildChips() {
-        val row = binding.chipRow
+        val row = _binding?.chipRow ?: return
         row.removeAllViews()
         val green = ContextCompat.getColor(requireContext(), R.color.cyd_green)
         val pad = (6 * resources.displayMetrics.density).toInt()
@@ -100,10 +106,11 @@ class TerminalFragment : Fragment() {
                 insetBottom = 0
                 setPadding(pad * 2, pad, pad * 2, pad)
                 setOnClickListener {
+                    if (!isAdded || _binding == null) return@setOnClickListener
                     if (label == "clear") {
-                        binding.btnClear.performClick()
+                        _binding?.btnClear?.performClick()
                     } else {
-                        binding.input.setText(label)
+                        _binding?.input?.setText(label)
                         runCurrent()
                     }
                 }
@@ -117,30 +124,47 @@ class TerminalFragment : Fragment() {
     }
 
     private fun runCurrent() {
-        val cmd = binding.input.text?.toString()?.trim().orEmpty()
+        val b = _binding ?: return
+        if (!isAdded) return
+        val cmd = b.input.text?.toString()?.trim().orEmpty()
         if (cmd.isEmpty()) return
-        binding.input.setText("")
+        b.input.setText("")
         appendRaw("hhf$ $cmd\n")
-        binding.btnRun.isEnabled = false
+        b.btnRun.isEnabled = false
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            val result = engine.execute(cmd)
-            binding.btnRun.isEnabled = true
-            if (result.output == "__CLEAR__") {
-                transcript.clear()
-                binding.output.text = ""
-                appendBanner()
-                return@launch
+        runJob?.cancel()
+        runJob = viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val result = engine.execute(cmd)
+                val live = _binding
+                if (live == null || !isAdded) return@launch
+
+                live.btnRun.isEnabled = true
+                if (result.output == "__CLEAR__") {
+                    transcript.clear()
+                    live.output.text = ""
+                    appendBanner()
+                    return@launch
+                }
+                if (result.output.isNotBlank()) {
+                    appendRaw(result.output.trimEnd() + "\n")
+                }
+                result.navigate?.let { handleNav(it) }
+                scrollBottom()
+            } catch (_: CancellationException) {
+                // Tab left mid-command — expected
+            } catch (e: Exception) {
+                val live = _binding
+                if (live != null && isAdded) {
+                    live.btnRun.isEnabled = true
+                    appendRaw("ERROR: ${e.message ?: e.javaClass.simpleName}\n")
+                }
             }
-            if (result.output.isNotBlank()) {
-                appendRaw(result.output.trimEnd() + "\n")
-            }
-            result.navigate?.let { handleNav(it) }
-            scrollBottom()
         }
     }
 
     private fun handleNav(target: String) {
+        if (!isAdded) return
         val act = activity as? MainActivity ?: return
         when (target) {
             "harden" -> act.navigateTo(R.id.nav_harden)
@@ -159,17 +183,22 @@ class TerminalFragment : Fragment() {
         if (transcript.length > 60_000) {
             transcript.delete(0, transcript.length - 40_000)
         }
-        binding.output.text = transcript.toString()
+        val live = _binding ?: return
+        live.output.text = transcript.toString()
         scrollBottom()
     }
 
     private fun scrollBottom() {
-        binding.scrollOut.post {
-            binding.scrollOut.fullScroll(View.FOCUS_DOWN)
+        val live = _binding ?: return
+        live.scrollOut.post {
+            // View may be gone by the time this runs (user left TERM)
+            _binding?.scrollOut?.fullScroll(View.FOCUS_DOWN)
         }
     }
 
     override fun onDestroyView() {
+        runJob?.cancel()
+        runJob = null
         _binding = null
         super.onDestroyView()
     }

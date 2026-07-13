@@ -13,6 +13,9 @@ import com.halehoundforge.fire.guardian.NetworkGuardianEngine
 
 /**
  * Fully local Guardian UI — no laptop / backend / Npcap calls.
+ *
+ * Lifecycle-safe: engine snapshots must never call requireActivity() or
+ * touch views after the fragment is torn down (TERM→GUARD race was silent-exit).
  */
 class GuardianFragment : Fragment(), NetworkGuardianEngine.Listener {
 
@@ -28,12 +31,13 @@ class GuardianFragment : Fragment(), NetworkGuardianEngine.Listener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         engine = NetworkGuardianEngine(requireContext().applicationContext).also { eng ->
             eng.addListener(this)
-            eng.getPreferredSsid()?.let { binding.preferredSsid.setText(it) }
+            eng.getPreferredSsid()?.let { _binding?.preferredSsid?.setText(it) }
             eng.start(viewLifecycleOwner.lifecycleScope)
         }
 
         binding.btnSetPreferred.setOnClickListener {
-            val ssid = binding.preferredSsid.text?.toString()?.trim().orEmpty()
+            if (!isAdded) return@setOnClickListener
+            val ssid = _binding?.preferredSsid?.text?.toString()?.trim().orEmpty()
             engine?.setPreferredSsid(ssid.ifEmpty { null })
             Toast.makeText(
                 requireContext(),
@@ -43,63 +47,73 @@ class GuardianFragment : Fragment(), NetworkGuardianEngine.Listener {
         }
 
         binding.btnReconnect.setOnClickListener {
+            if (!isAdded) return@setOnClickListener
             val msg = engine?.attemptReconnectToPreferred() ?: "Engine offline"
             Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
         }
     }
 
     override fun onSnapshot(snapshot: NetworkGuardianEngine.Snapshot) {
-        val b = _binding ?: return
-        requireActivity().runOnUiThread {
-            b.modeBanner.text = "◆ ${snapshot.modeLabel}"
+        // May arrive on a background thread from the engine loop
+        if (!isAdded) return
+        val act = activity ?: return
+        act.runOnUiThread {
+            if (!isAdded) return@runOnUiThread
+            val b = _binding ?: return@runOnUiThread
+            try {
+                b.modeBanner.text = "◆ ${snapshot.modeLabel}"
 
-            b.predictiveStatus.text = snapshot.predictiveStatus
-            b.predictiveStatus.setTextColor(
-                when (snapshot.predictiveLevel) {
-                    NetworkGuardianEngine.Level.STABLE -> Color.parseColor("#00FF41")
-                    NetworkGuardianEngine.Level.WATCH -> Color.parseColor("#FFCC00")
-                    NetworkGuardianEngine.Level.HIGH -> Color.parseColor("#FF8C42")
-                    NetworkGuardianEngine.Level.CRITICAL -> Color.parseColor("#FF3344")
-                }
-            )
-
-            b.linkBlock.text = buildString {
-                appendLine("LINK (ON-DEVICE)")
-                appendLine("SSID       : ${snapshot.ssid}${if (snapshot.ssidLockAlert) "  ⚠ not preferred" else ""}")
-                appendLine("BSSID      : ${snapshot.bssid}")
-                appendLine("RSSI       : ${snapshot.rssi} dBm")
-                appendLine("Link       : ${snapshot.linkMbps} Mbps  ·  ${snapshot.frequencyMhz} MHz")
-                appendLine("IP / GW    : ${snapshot.ip}  →  ${snapshot.gateway}")
-                appendLine("Supplicant : ${snapshot.supplicant}  ·  up=${snapshot.connected}")
-            }.trimEnd()
-
-            b.bwBlock.text = buildString {
-                appendLine("SENSORS (NO LAPTOP)")
-                appendLine("TX/RX      : ${"%.3f".format(snapshot.txMbps)} / ${"%.3f".format(snapshot.rxMbps)} Mbps")
-                appendLine(
-                    "Latency    : ${if (snapshot.latencyMs < 0) "timeout" else "${snapshot.latencyMs} ms"}" +
-                        "  ·  jitter ${"%.0f".format(snapshot.jitterMs)} ms"
+                b.predictiveStatus.text = snapshot.predictiveStatus
+                b.predictiveStatus.setTextColor(
+                    when (snapshot.predictiveLevel) {
+                        NetworkGuardianEngine.Level.STABLE -> Color.parseColor("#00FF41")
+                        NetworkGuardianEngine.Level.WATCH -> Color.parseColor("#FFCC00")
+                        NetworkGuardianEngine.Level.HIGH -> Color.parseColor("#FF8C42")
+                        NetworkGuardianEngine.Level.CRITICAL -> Color.parseColor("#FF3344")
+                    }
                 )
-                appendLine("GW drops   : ${snapshot.packetDrops}")
-                appendLine("Storm score: ${snapshot.stormScore}/100")
-                appendLine("Signals    : ${snapshot.signals}")
-            }.trimEnd()
 
-            b.mitigation.text = snapshot.mitigation
+                b.linkBlock.text = buildString {
+                    appendLine("LINK (ON-DEVICE)")
+                    appendLine("SSID       : ${snapshot.ssid}${if (snapshot.ssidLockAlert) "  ⚠ not preferred" else ""}")
+                    appendLine("BSSID      : ${snapshot.bssid}")
+                    appendLine("RSSI       : ${snapshot.rssi} dBm")
+                    appendLine("Link       : ${snapshot.linkMbps} Mbps  ·  ${snapshot.frequencyMhz} MHz")
+                    appendLine("IP / GW    : ${snapshot.ip}  →  ${snapshot.gateway}")
+                    appendLine("Supplicant : ${snapshot.supplicant}  ·  up=${snapshot.connected}")
+                }.trimEnd()
 
-            b.alertsBlock.text = if (snapshot.alerts.isEmpty()) {
-                "No anomalies yet — leave this tab open while on Wi‑Fi.\n" +
-                    "Local sensors: disconnects · RSSI cliffs · BSSID churn · latency."
-            } else {
-                snapshot.alerts.joinToString("\n")
+                b.bwBlock.text = buildString {
+                    appendLine("SENSORS (NO LAPTOP)")
+                    appendLine("TX/RX      : ${"%.3f".format(snapshot.txMbps)} / ${"%.3f".format(snapshot.rxMbps)} Mbps")
+                    appendLine(
+                        "Latency    : ${if (snapshot.latencyMs < 0) "timeout" else "${snapshot.latencyMs} ms"}" +
+                            "  ·  jitter ${"%.0f".format(snapshot.jitterMs)} ms"
+                    )
+                    appendLine("GW drops   : ${snapshot.packetDrops}")
+                    appendLine("Storm score: ${snapshot.stormScore}/100")
+                    appendLine("Signals    : ${snapshot.signals}")
+                }.trimEnd()
+
+                b.mitigation.text = snapshot.mitigation
+
+                b.alertsBlock.text = if (snapshot.alerts.isEmpty()) {
+                    "No anomalies yet — leave this tab open while on Wi‑Fi.\n" +
+                        "Local sensors: disconnects · RSSI cliffs · BSSID churn · latency."
+                } else {
+                    snapshot.alerts.joinToString("\n")
+                }
+            } catch (_: Exception) {
+                // View hierarchy mid-teardown — ignore
             }
         }
     }
 
     override fun onDestroyView() {
-        engine?.removeListener(this)
-        engine?.stop()
+        val eng = engine
         engine = null
+        eng?.removeListener(this)
+        eng?.stop()
         _binding = null
         super.onDestroyView()
     }
