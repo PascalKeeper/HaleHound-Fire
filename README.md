@@ -6,7 +6,7 @@
 > The CYD stays the **radio edge** (tight flash/RAM, multi-protocol TX/RX).  
 > The Fire is the **debug / storage / operator plane** — more screen, disk, and compute for long sessions and future telemetry/loot analysis.
 
-**Status:** v1.0.0 shipped · independent community project · MIT · [NOTICE.md](NOTICE.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [PRIVACY.md](PRIVACY.md)
+**Status:** v1.1.0 · independent community project · MIT · [NOTICE.md](NOTICE.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [PRIVACY.md](PRIVACY.md) · [HARDWARE_ANTENNA.md](HARDWARE_ANTENNA.md)
 
 **Authors of this companion:** [PascalKeeper](https://github.com/PascalKeeper) / Joseph Peransi  
 
@@ -34,8 +34,8 @@ Full rationale and phased roadmap: **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 - CYD-style arsenal UI + locked radio tiles (honest capability matrix)  
 - **Fully local** Network Guardian (no laptop)  
 - Passive Wi‑Fi / BLE survey  
-- CYD discover + open softAP URL  
-- Foundation for future **debug companion** (telemetry, loot pull, serial console)  
+- CYD live telemetry + loot vault (TERM: `cyd status|loot|pull|vault`)  
+- Salvage antenna guide for first CYD build — [HARDWARE_ANTENNA.md](HARDWARE_ANTENNA.md) (802.11a vs b/g, RP-SMA)  
 
 ## Build (Windows)
 

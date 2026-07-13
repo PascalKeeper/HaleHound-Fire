@@ -14,6 +14,7 @@ Ethics gate still applies: Blue Team / authorized only. No offensive TX from Fir
 | S1 | **Loot vault on Fire** | Offload CYD SD → tablet; session folders + optional `.hhf` encrypt |
 | S2 | **TERM: `cyd status\|loot\|pull\|vault`** | Grok-friendly ops without tapping UI |
 | S3 | **Private-host first policy** | SoftAP/LAN always OK; public only via HomeCallPolicy + HTTPS |
+| S4 | **HARDWARE_ANTENNA.md** | Salvage RP-SMA (Aruba AP-60 era); 802.11a vs b/g → CYD 2.4 map |
 
 ---
 

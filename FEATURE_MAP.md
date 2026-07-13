@@ -49,3 +49,5 @@ Private LAN/softAP always allowed. Public hosts only via HomeCallPolicy (HTTPS s
 All Fire-side Guardian features are **defensive / Blue Team**. No deauth transmission. True frame-level Guardian remains on authorized ESP32 CYD hardware.
 
 Kitchen secrets / feature backlog: see **KITCHEN_SECRETS.md** (no withholding rule).
+
+Salvage antennas (Aruba RP-SMA, 802.11a vs b/g): see **HARDWARE_ANTENNA.md**.
