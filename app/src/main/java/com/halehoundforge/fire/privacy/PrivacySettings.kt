@@ -42,6 +42,7 @@ object PrivacySettings {
         appendLine("encrypt exports at rest : ${encryptExports(context)}")
         appendLine("allow call-home         : ${allowHomeCalls(context)}  (default off)")
         appendLine("home HTTPS only         : ${homeHttpsOnly(context)}")
+        appendLine("auto update poll        : OFF (tap About CHECK only)")
         appendLine("telemetry to vendor     : NONE")
         appendLine("analytics SDKs          : NONE")
     }

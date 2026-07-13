@@ -87,6 +87,51 @@
             android:text="TOGGLE CALL-HOME (DEFAULT OFF)"
             android:textSize="11sp" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:fontFamily="monospace"
+            android:text="UPDATES (WI‑FI · OPT-IN)"
+            android:textColor="@color/cyd_amber"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/updateStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_cyd_panel"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp"
+            android:padding="10dp"
+            android:text="No auto phone-home. Tap CHECK when you want GitHub Releases over Wi‑Fi. Dojo USB not required."
+            android:textColor="@color/cyd_text_dim"
+            android:textSize="10sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCheckUpdate"
+            style="@style/Widget.HaleHound.Button.Outline"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="CHECK FOR UPDATES (GITHUB)"
+            android:textSize="11sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDownloadUpdate"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="4dp"
+            android:enabled="false"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="DOWNLOAD + INSTALL APK"
+            android:textSize="11sp" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnWipeSecure"
             android:layout_width="match_parent"

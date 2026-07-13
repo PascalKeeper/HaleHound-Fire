@@ -10,6 +10,16 @@
 | Scrub PII on export | **ON** | MAC/IP/serial redaction in shared reports |
 | Encrypt exports at rest | **ON** | AES-GCM (`HHF1.…`) for .bat / report files |
 | Sensitive prefs | **EncryptedSharedPreferences** | Keystore-backed |
+| App update check | **OFF until you tap** | About → CHECK or TERM `update` → GitHub Releases only |
+
+## Wi‑Fi updates (not dojo USB)
+
+Runtime learning / Guardian / harden **do not need** the laptop. Only **new APK builds** need delivery.
+
+- **Opt-in:** no background poll, no silent download  
+- **Endpoint:** public `api.github.com` releases for this repo (HTTPS)  
+- **Install:** user confirms system package installer; Fire “unknown sources” may be required once  
+- Attach a `.apk` asset to a GitHub Release for one-tap DOWNLOAD + INSTALL  
 
 ## Personal markers we hide
 

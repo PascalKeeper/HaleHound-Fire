@@ -7,6 +7,7 @@ import com.halehoundforge.fire.companion.CydDiscovery
 import com.halehoundforge.fire.companion.CydLinkClient
 import com.halehoundforge.fire.companion.CydLootVault
 import com.halehoundforge.fire.core.DeviceProfile
+import com.halehoundforge.fire.update.AppUpdateChecker
 import com.halehoundforge.fire.hardening.FirewallBatchGenerator
 import com.halehoundforge.fire.hardening.HardeningEngine
 import com.halehoundforge.fire.hardening.HardeningKnowledge
@@ -100,6 +101,7 @@ class OpsTerminalEngine(private val context: Context) {
                     "HaleHound Fire ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n" +
                         BuildConfig.APPLICATION_ID
                 )
+                "update", "upgrade", "ota" -> runUpdateCheck()
                 "thanks", "dig", "family" -> Result(
                     "Copy that. Grok Build stays behind the glass;\n" +
                         "you keep living. Terminal is agent-friendly:\n" +
@@ -115,6 +117,29 @@ class OpsTerminalEngine(private val context: Context) {
             } else result
         } catch (e: Exception) {
             Result("ERROR: ${e.message ?: e.javaClass.simpleName}")
+        }
+    }
+
+    private suspend fun runUpdateCheck(): Result {
+        return try {
+            val info = AppUpdateChecker.checkLatest()
+            Result(
+                buildString {
+                    appendLine("═══ UPDATE CHECK (Wi‑Fi / GitHub) ═══")
+                    appendLine(info.notes)
+                    if (info.body.isNotBlank()) {
+                        appendLine("--- notes ---")
+                        appendLine(info.body.take(500))
+                    }
+                    appendLine()
+                    appendLine("Install APK: About → DOWNLOAD + INSTALL (needs asset on release)")
+                    appendLine("No auto poll · no USB dojo required for the check")
+                    if (info.htmlUrl.isNotBlank()) appendLine(info.htmlUrl)
+                }.trimEnd(),
+                navigate = "about"
+            )
+        } catch (e: Exception) {
+            Result("Update check failed: ${e.message}\nNeed internet (GitHub Releases over Wi‑Fi).")
         }
     }
 
@@ -643,7 +668,7 @@ class OpsTerminalEngine(private val context: Context) {
 
     companion object {
         val QUICK_CHIPS = listOf(
-            "help", "status", "harden", "firewall", "privacy", "perf", "wifi", "ble", "cyd", "guard", "dns", "agent", "clear"
+            "help", "status", "harden", "firewall", "privacy", "perf", "wifi", "ble", "cyd", "guard", "update", "dns", "agent", "clear"
         )
 
         private val HELP = """
@@ -668,6 +693,7 @@ class OpsTerminalEngine(private val context: Context) {
               cyd pull      offload loot → Fire vault
               cyd vault     list local vault files
               guard         open local Guardian
+              update        check GitHub Releases over Wi‑Fi
               ports <ip>    danger-port probe host
               ping <host>   TCP reachability
               dns           Private DNS playbook
