@@ -31,8 +31,8 @@ class HomeFragment : Fragment() {
         binding.tileBle.setOnClickListener { host?.openBle() }
         binding.tileGuard.setOnClickListener { host?.navigateTo(R.id.nav_guard) }
         binding.tileSigint.setOnClickListener {
-            host?.navigateTo(R.id.nav_harden)
-            Toast.makeText(requireContext(), "HARDEN › network harden arsenal", Toast.LENGTH_SHORT).show()
+            host?.openSensorHunt()
+            Toast.makeText(requireContext(), "SENSOR HUNT › Flock · tags · cams", Toast.LENGTH_SHORT).show()
         }
         binding.tileCyd.setOnClickListener { host?.navigateTo(R.id.nav_cyd) }
         binding.tileAbout.setOnClickListener {

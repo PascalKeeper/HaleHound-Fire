@@ -16,6 +16,7 @@ import com.halehoundforge.fire.ui.fragments.CydFragment
 import com.halehoundforge.fire.ui.fragments.GuardianFragment
 import com.halehoundforge.fire.ui.fragments.HardenFragment
 import com.halehoundforge.fire.ui.fragments.HomeFragment
+import com.halehoundforge.fire.ui.fragments.SensorFragment
 import com.halehoundforge.fire.ui.fragments.TerminalFragment
 import com.halehoundforge.fire.ui.fragments.WifiFragment
 
@@ -85,6 +86,10 @@ class MainActivity : AppCompatActivity() {
 
     fun openWifi() {
         open(WifiFragment())
+    }
+
+    fun openSensorHunt() {
+        open(SensorFragment())
     }
 
     private fun open(fragment: Fragment) {

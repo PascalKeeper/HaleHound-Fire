@@ -11,6 +11,7 @@ import com.halehoundforge.fire.debug.Breadcrumbs
 import com.halehoundforge.fire.debug.CrashGuard
 import com.halehoundforge.fire.debug.DebugVault
 import com.halehoundforge.fire.debug.JankMonitor
+import com.halehoundforge.fire.sensor.SensorHuntEngine
 import com.halehoundforge.fire.update.AppUpdateChecker
 import com.halehoundforge.fire.hardening.FirewallBatchGenerator
 import com.halehoundforge.fire.hardening.HardeningEngine
@@ -94,6 +95,7 @@ class OpsTerminalEngine(private val context: Context) {
                         "guard" to "guard", "guardian" to "guard",
                         "wifi" to "wifi", "wlan" to "wifi",
                         "cyd" to "cyd", "ble" to "ble",
+                        "hunt" to "hunt", "sensor" to "hunt", "flock" to "hunt", "sigint" to "hunt",
                         "about" to "about", "home" to "home", "arsenal" to "home",
                         "term" to "term", "terminal" to "term"
                     )
@@ -107,6 +109,7 @@ class OpsTerminalEngine(private val context: Context) {
                         BuildConfig.APPLICATION_ID
                 )
                 "update", "upgrade", "ota" -> runUpdateCheck()
+                "hunt", "flock", "airtag", "sensor", "sigint" -> runHunt(args)
                 "crashlog", "crash", "crashes" -> runCrashLog(args)
                 "crumbs", "breadcrumbs", "trail" -> Result(
                     "═══ BREADCRUMBS ═══\n" + Breadcrumbs.dump()
@@ -128,6 +131,31 @@ class OpsTerminalEngine(private val context: Context) {
             } else result
         } catch (e: Exception) {
             Result("ERROR: ${e.message ?: e.javaClass.simpleName}")
+        }
+    }
+
+    private suspend fun runHunt(args: List<String>): Result {
+        val lan = args.none { it.equals("nolan", true) || it.equals("rf", true) }
+        return try {
+            val report = SensorHuntEngine.hunt(context, includeLan = lan)
+            Result(
+                buildString {
+                    appendLine("═══ SENSOR HUNT ═══")
+                    appendLine("hits=${report.hits.size} ble=${report.bleScanned} wifi=${report.wifiScanned} lan=${report.lanHosts}")
+                    report.hits.take(25).forEach { h ->
+                        appendLine("[${h.confidence}] ${h.kind}  ${h.title}")
+                        appendLine("  ${h.transport} ${h.address} ${h.rssi?.let { "${it}dBm" } ?: ""}")
+                        h.signals.take(4).forEach { appendLine("  · $it") }
+                        h.networkHints.take(2).forEach { appendLine("  → $it") }
+                    }
+                    if (report.hits.size > 25) appendLine("… ${report.hits.size - 25} more")
+                    report.notes.forEach { appendLine("· $it") }
+                    appendLine("UI: open hunt  |  TERM: hunt nolan = RF only")
+                }.trimEnd(),
+                navigate = "hunt"
+            )
+        } catch (e: Exception) {
+            Result("Hunt failed: ${e.message}")
         }
     }
 
@@ -742,7 +770,7 @@ class OpsTerminalEngine(private val context: Context) {
     companion object {
         val QUICK_CHIPS = listOf(
             "help", "status", "harden", "firewall", "privacy", "perf", "wifi", "ble", "cyd",
-            "guard", "update", "crashlog", "crumbs", "jank", "debug", "dns", "agent", "clear"
+            "guard", "hunt", "update", "crashlog", "crumbs", "jank", "debug", "dns", "agent", "clear"
         )
 
         private val HELP = """
@@ -768,6 +796,7 @@ class OpsTerminalEngine(private val context: Context) {
               cyd vault     list local vault files
               guard         open local Guardian
               update        check GitHub Releases over Wi‑Fi
+              hunt          Flock / AirTag / spy-cam passive hunt
               crashlog      last crash/hang report (list|clear|test)
               crumbs        breadcrumb trail
               jank          frame jank summary

@@ -43,6 +43,16 @@
             android:textColorHint="@color/cyd_text_muted"
             android:textSize="12sp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnConnectNearest"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="8dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="⚡ CONNECT NEAREST CYD + CONTROL"
+            android:textSize="12sp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -120,6 +130,16 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="PULL LOOT → FIRE VAULT" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnControl"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="4dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="OPEN ARSENAL CONTROL (WEBVIEW)"
+            android:textSize="11sp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnOpenHost"

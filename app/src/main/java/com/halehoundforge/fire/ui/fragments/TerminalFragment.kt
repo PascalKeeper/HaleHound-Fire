@@ -179,6 +179,7 @@ class TerminalFragment : Fragment() {
             "term" -> { /* already here */ }
             "ble" -> act.openBle()
             "about" -> act.openAbout()
+            "hunt", "sensor", "flock", "sigint" -> act.openSensorHunt()
         }
     }
 
