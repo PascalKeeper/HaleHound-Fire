@@ -8,6 +8,7 @@ import com.halehoundforge.fire.core.DeviceProfile
 import com.halehoundforge.fire.hardening.FirewallBatchGenerator
 import com.halehoundforge.fire.hardening.HardeningEngine
 import com.halehoundforge.fire.hardening.HardeningKnowledge
+import com.halehoundforge.fire.perf.LatencyProfiles
 import com.halehoundforge.fire.privacy.ExportCrypto
 import com.halehoundforge.fire.privacy.HomeCallPolicy
 import com.halehoundforge.fire.privacy.PiiScrubber
@@ -62,6 +63,7 @@ class OpsTerminalEngine(private val context: Context) {
                 "harden", "audit", "score" -> runHarden()
                 "firewall", "fw", "netsh", "bat" -> runFirewallBat()
                 "privacy", "opsec", "ninja" -> runPrivacy(args)
+                "perf", "latency", "profile" -> runPerf(args)
                 "wifi", "wlanscan", "scanwifi" -> runWifi()
                 "ble", "blescan" -> runBle()
                 "cyd", "discover" -> runCyd()
@@ -110,6 +112,37 @@ class OpsTerminalEngine(private val context: Context) {
             } else result
         } catch (e: Exception) {
             Result("ERROR: ${e.message ?: e.javaClass.simpleName}")
+        }
+    }
+
+    private fun runPerf(args: List<String>): Result {
+        val sub = args.firstOrNull()?.lowercase()
+        return when (sub) {
+            null, "status", "show" -> {
+                val p = LatencyProfiles.active
+                Result(
+                    buildString {
+                        appendLine("═══ LATENCY PROFILE (${p.name}) ═══")
+                        appendLine("port probe timeout : ${p.portProbeTimeoutMs}ms")
+                        appendLine("max concurrent     : ${p.maxConcurrentProbes}")
+                        appendLine("guardian radio     : ${p.guardianRadioMs}ms")
+                        appendLine("guardian gateway   : ${p.guardianGatewayMs}ms")
+                        appendLine("ble scan           : ${p.bleScanMs}ms")
+                        appendLine("http connect/read  : ${p.httpConnectMs}/${p.httpReadMs}ms")
+                        appendLine("Velora lessons: budgets · coalesce UI · bounded parallel")
+                        appendLine("Switch: perf ultra | perf balanced")
+                    }.trimEnd()
+                )
+            }
+            "ultra" -> {
+                LatencyProfiles.useUltra()
+                Result("Latency profile → ultra (Fire field default)")
+            }
+            "balanced", "lab" -> {
+                LatencyProfiles.useBalanced()
+                Result("Latency profile → balanced (lab / thorough)")
+            }
+            else -> Result("perf [status|ultra|balanced]")
         }
     }
 
@@ -452,7 +485,7 @@ class OpsTerminalEngine(private val context: Context) {
 
     companion object {
         val QUICK_CHIPS = listOf(
-            "help", "status", "harden", "firewall", "privacy", "wifi", "ble", "cyd", "guard", "dns", "agent", "clear"
+            "help", "status", "harden", "firewall", "privacy", "perf", "wifi", "ble", "cyd", "guard", "dns", "agent", "clear"
         )
 
         private val HELP = """

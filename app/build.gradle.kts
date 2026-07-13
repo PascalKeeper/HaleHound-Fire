@@ -11,15 +11,17 @@ android {
         applicationId = "com.halehoundforge.fire"
         minSdk = 30
         targetSdk = 34
-        versionCode = 9
-        versionName = "0.9.0-fire"
+        versionCode = 10
+        versionName = "1.0.0-fire"
         // Fire OS 8 / Android 11 (API 30) — KFQUWI Fire 7 12th gen target
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // 2026 practice: R8 minify+optimize for smaller DEX / better ART locality
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

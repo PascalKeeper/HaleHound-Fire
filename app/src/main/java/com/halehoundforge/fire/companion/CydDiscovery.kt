@@ -1,5 +1,6 @@
 package com.halehoundforge.fire.companion
 
+import com.halehoundforge.fire.perf.LatencyProfiles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -42,9 +43,10 @@ object CydDiscovery {
         val normalized = if (raw.startsWith("http")) raw else "http://$raw"
         try {
             val start = System.currentTimeMillis()
+            val p = LatencyProfiles.active
             val conn = (URL(normalized).openConnection() as HttpURLConnection).apply {
-                connectTimeout = 1500
-                readTimeout = 1500
+                connectTimeout = p.httpConnectMs
+                readTimeout = p.httpReadMs
                 instanceFollowRedirects = true
                 requestMethod = "GET"
             }
@@ -63,16 +65,18 @@ object CydDiscovery {
     private fun probeHttp(host: String, port: Int): CydEndpoint? {
         return try {
             val start = System.currentTimeMillis()
+            val p = LatencyProfiles.active
             Socket().use { sock ->
-                sock.connect(InetSocketAddress(host, port), 400)
+                sock.tcpNoDelay = true
+                sock.connect(InetSocketAddress(host, port), p.connectTimeoutMs.coerceAtMost(500))
             }
             val url = if (port == 80) "http://$host/" else "http://$host:$port/"
             val openMs = System.currentTimeMillis() - start
             // Optional shallow GET
             try {
                 val conn = (URL(url).openConnection() as HttpURLConnection).apply {
-                    connectTimeout = 800
-                    readTimeout = 800
+                    connectTimeout = p.httpConnectMs
+                    readTimeout = p.httpReadMs
                     requestMethod = "GET"
                 }
                 val code = conn.responseCode

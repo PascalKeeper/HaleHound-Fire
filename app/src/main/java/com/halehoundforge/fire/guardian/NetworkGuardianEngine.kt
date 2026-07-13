@@ -14,6 +14,7 @@ import android.net.wifi.SupplicantState
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.SystemClock
+import com.halehoundforge.fire.perf.LatencyProfiles
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -74,7 +75,13 @@ class NetworkGuardianEngine(private val context: Context) {
         val ssidLockAlert: Boolean,
         val modeLabel: String,
         val signals: String
-    )
+    ) {
+        /** Coarse signature for UI coalesce (ignore high-frequency bandwidth noise). */
+        fun uiSignature(): String =
+            "$ssid|$bssid|$rssi|$linkMbps|$connected|$supplicant|$latencyMs|" +
+                "${jitterMs.toInt()}|$packetDrops|$disconnectEvents|$stormScore|" +
+                "$predictiveStatus|${alerts.firstOrNull()}|$ssidLockAlert"
+    }
 
     enum class Level { STABLE, WATCH, HIGH, CRITICAL }
 
@@ -109,6 +116,8 @@ class NetworkGuardianEngine(private val context: Context) {
     private var lastBssid: String? = null
     private var lastLinkMbps: Int = -1
     private var lastRssiSample: Int = -127
+    private var lastGatewayProbeAt = 0L
+    private var lastUiSignature: String? = null
 
     private val wifiReceiver = object : BroadcastReceiver() {
         override fun onReceive(ctx: Context?, intent: Intent?) {
@@ -213,14 +222,25 @@ class NetworkGuardianEngine(private val context: Context) {
         pushAlert("LOCAL Guardian online — fully on-device (no laptop)")
 
         job = scope.launch(Dispatchers.Default) {
+            // Velora-style budgets: cheap radio often, expensive gateway less often
             while (isActive && running) {
+                val p = LatencyProfiles.active
                 sampleBandwidth()
                 sampleRadioDynamics()
-                val lat = probeGatewayLatency()
-                updateLatencyStats(lat)
+                val now = SystemClock.elapsedRealtime()
+                if (now - lastGatewayProbeAt >= p.guardianGatewayMs) {
+                    lastGatewayProbeAt = now
+                    val lat = probeGatewayLatency()
+                    updateLatencyStats(lat)
+                }
                 val snap = buildSnapshot()
-                listeners.forEach { it.onSnapshot(snap) }
-                delay(1000L)
+                // Coalesce UI: skip identical frames (reduces Fire GPU/jank)
+                val sig = snap.uiSignature()
+                if (sig != lastUiSignature) {
+                    lastUiSignature = sig
+                    listeners.forEach { it.onSnapshot(snap) }
+                }
+                delay(p.guardianRadioMs)
             }
         }
     }
@@ -324,14 +344,21 @@ class NetworkGuardianEngine(private val context: Context) {
 
     private fun probeGatewayLatency(): Int {
         val gw = resolveGateway() ?: return -1
+        val t = LatencyProfiles.active.connectTimeoutMs
         return try {
             val start = SystemClock.elapsedRealtime()
-            Socket().use { sock -> sock.connect(InetSocketAddress(gw, 80), 800) }
+            Socket().use { sock ->
+                sock.tcpNoDelay = true
+                sock.connect(InetSocketAddress(gw, 80), t)
+            }
             (SystemClock.elapsedRealtime() - start).toInt().coerceAtLeast(1)
         } catch (_: Exception) {
             try {
                 val start = SystemClock.elapsedRealtime()
-                Socket().use { sock -> sock.connect(InetSocketAddress(gw, 53), 800) }
+                Socket().use { sock ->
+                    sock.tcpNoDelay = true
+                    sock.connect(InetSocketAddress(gw, 53), t)
+                }
                 (SystemClock.elapsedRealtime() - start).toInt().coerceAtLeast(1)
             } catch (_: Exception) {
                 -1

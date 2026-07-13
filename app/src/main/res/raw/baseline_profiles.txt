@@ -1,0 +1,12 @@
+# Manual baseline-style hot paths for HaleHound Fire (Fire OS sideload friendly).
+# Full Jetpack Baseline Profile module is overkill for debug sideloads; document
+# hot classes for future release profile generation (Android 2026 guidance).
+#
+# HSPLcom/halehoundforge/fire/ui/MainActivity;
+# HSPLcom/halehoundforge/fire/ui/ValhallaGateActivity;
+# HSPLcom/halehoundforge/fire/ui/fragments/HardenFragment;
+# HSPLcom/halehoundforge/fire/ui/fragments/GuardianFragment;
+# HSPLcom/halehoundforge/fire/ui/fragments/TerminalFragment;
+# HSPLcom/halehoundforge/fire/hardening/HardeningEngine;
+# HSPLcom/halehoundforge/fire/guardian/NetworkGuardianEngine;
+# HSPLcom/halehoundforge/fire/terminal/OpsTerminalEngine;

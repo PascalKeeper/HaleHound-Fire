@@ -8,8 +8,11 @@ import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.Build
+import com.halehoundforge.fire.perf.LatencyProfiles
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 
 data class BleDeviceRow(
@@ -26,6 +29,7 @@ data class BleDeviceRow(
 
 /**
  * Passive BLE advertisement survey. No pairing storms, no spoof TX.
+ * Uses coroutine delay (not Thread.sleep) — Velora-style non-blocking wait.
  */
 class BleSurvey(private val context: Context) {
 
@@ -33,29 +37,26 @@ class BleSurvey(private val context: Context) {
         (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
 
     @SuppressLint("MissingPermission")
-    suspend fun scan(durationMs: Long = 8_000L): List<BleDeviceRow> {
-        val bt = adapter ?: return emptyList()
-        if (!bt.isEnabled) return emptyList()
+    suspend fun scan(durationMs: Long = LatencyProfiles.active.bleScanMs): List<BleDeviceRow> =
+        withContext(Dispatchers.Default) {
+            val bt = adapter ?: return@withContext emptyList()
+            if (!bt.isEnabled) return@withContext emptyList()
+            val scanner = bt.bluetoothLeScanner ?: return@withContext emptyList()
+            val found = LinkedHashMap<String, BleDeviceRow>()
 
-        val scanner = bt.bluetoothLeScanner ?: return emptyList()
-        val found = LinkedHashMap<String, BleDeviceRow>()
-
-        return suspendCancellableCoroutine { cont ->
             val callback = object : ScanCallback() {
                 override fun onScanResult(callbackType: Int, result: ScanResult) {
                     val row = result.toRow()
-                    val prev = found[row.address]
-                    if (prev == null || row.rssi > prev.rssi) {
-                        found[row.address] = row
+                    synchronized(found) {
+                        val prev = found[row.address]
+                        if (prev == null || row.rssi > prev.rssi) {
+                            found[row.address] = row
+                        }
                     }
                 }
 
                 override fun onBatchScanResults(results: MutableList<ScanResult>) {
                     results.forEach { onScanResult(0, it) }
-                }
-
-                override fun onScanFailed(errorCode: Int) {
-                    // Deliver whatever we have
                 }
             }
 
@@ -65,34 +66,23 @@ class BleSurvey(private val context: Context) {
 
             try {
                 scanner.startScan(null, settings, callback)
-            } catch (e: SecurityException) {
-                if (cont.isActive) cont.resume(emptyList())
-                return@suspendCancellableCoroutine
+            } catch (_: SecurityException) {
+                return@withContext emptyList()
             }
 
-            cont.invokeOnCancellation {
+            try {
+                delay(durationMs)
+            } finally {
                 try {
                     scanner.stopScan(callback)
                 } catch (_: Exception) {
                 }
             }
 
-            // Finish after duration on a background path
-            Thread {
-                try {
-                    Thread.sleep(durationMs)
-                } catch (_: InterruptedException) {
-                }
-                try {
-                    scanner.stopScan(callback)
-                } catch (_: Exception) {
-                }
-                if (cont.isActive) {
-                    cont.resume(found.values.sortedByDescending { it.rssi })
-                }
-            }.start()
+            synchronized(found) {
+                found.values.sortedByDescending { it.rssi }
+            }
         }
-    }
 
     @SuppressLint("MissingPermission")
     private fun ScanResult.toRow(): BleDeviceRow {

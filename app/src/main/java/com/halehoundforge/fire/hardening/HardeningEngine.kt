@@ -7,10 +7,13 @@ import android.net.LinkProperties
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
+import com.halehoundforge.fire.perf.LatencyProfiles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.net.Inet4Address
 import java.net.InetSocketAddress
@@ -66,23 +69,28 @@ class HardeningEngine(private val context: Context) {
 
         val ports = HardeningKnowledge.dangerPorts.map { it.port }.distinct()
         val hits = ConcurrentLinkedQueue<PortHit>()
+        val profile = LatencyProfiles.active
+        // Bounded concurrency — Fire 7 thrash guard (Velora: budget parallel work)
+        val gate = Semaphore(profile.maxConcurrentProbes)
 
         coroutineScope {
             targets.flatMap { host ->
                 ports.map { port ->
                     async {
-                        val meta = HardeningKnowledge.portByNumber(port)
-                        val start = System.currentTimeMillis()
-                        val open = probe(host, port, 350)
-                        val ms = System.currentTimeMillis() - start
-                        hits += PortHit(
-                            host = host,
-                            port = port,
-                            open = open,
-                            name = meta?.name ?: "port/$port",
-                            risk = meta?.risk ?: HardeningKnowledge.Risk.MEDIUM,
-                            latencyMs = ms
-                        )
+                        gate.withPermit {
+                            val meta = HardeningKnowledge.portByNumber(port)
+                            val start = System.currentTimeMillis()
+                            val open = probe(host, port, profile.portProbeTimeoutMs)
+                            val ms = System.currentTimeMillis() - start
+                            hits += PortHit(
+                                host = host,
+                                port = port,
+                                open = open,
+                                name = meta?.name ?: "port/$port",
+                                risk = meta?.risk ?: HardeningKnowledge.Risk.MEDIUM,
+                                latencyMs = ms
+                            )
+                        }
                     }
                 }
             }.awaitAll()
@@ -274,6 +282,7 @@ class HardeningEngine(private val context: Context) {
     private fun probe(host: String, port: Int, timeoutMs: Int): Boolean {
         return try {
             Socket().use { s ->
+                s.tcpNoDelay = true
                 s.connect(InetSocketAddress(host, port), timeoutMs)
                 true
             }
