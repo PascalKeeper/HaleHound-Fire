@@ -1,5 +1,24 @@
 # Architecture: Fire as debug plane, CYD as radio edge
 
+## Sensei / ninja model (product intent)
+
+| Role | Hardware | Job |
+|------|----------|-----|
+| **Sensei (Master)** | Windows PC | Train once: build APKs, flash CYD firmware, mint firewall playbooks, deep forensics. Then **rest**. |
+| **Ninjas (Field)** | Fire tablet + HaleHound CYD | Deploy without broadcasting a workstation identity. Audit, guard, ops terminal, radios. Save the day. |
+
+The PC gives **identity to the masses** (hostname, big OS footprint, always-on lab machine). That is not the mission.
+
+**Mission:** Sensei instills training into the kit. Ninjas leave the dojo. Master gets well‑needed rest (and bootayyy). Field work does **not** require the sensei online.
+
+- No tether to Admin UAC in a parking lot  
+- No “bring the gaming PC to the engagement”  
+- Fire + CYD kit bag = complete operator plane + radio edge  
+
+PC remains optional **home dock** only — never the center of gravity in the field.
+
+---
+
 ## Why this port exists
 
 The **ESP32 CYD** is an excellent multi-radio *edge* device, but it is intentionally constrained:
