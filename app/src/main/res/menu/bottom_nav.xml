@@ -13,9 +13,9 @@
         android:icon="@drawable/ic_nav_guard"
         android:title="GUARD" />
     <item
-        android:id="@+id/nav_wifi"
-        android:icon="@drawable/ic_nav_wifi"
-        android:title="WIFI" />
+        android:id="@+id/nav_term"
+        android:icon="@drawable/ic_nav_term"
+        android:title="TERM" />
     <item
         android:id="@+id/nav_cyd"
         android:icon="@drawable/ic_nav_cyd"

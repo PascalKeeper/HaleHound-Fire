@@ -14,6 +14,7 @@ import com.halehoundforge.fire.ui.fragments.CydFragment
 import com.halehoundforge.fire.ui.fragments.GuardianFragment
 import com.halehoundforge.fire.ui.fragments.HardenFragment
 import com.halehoundforge.fire.ui.fragments.HomeFragment
+import com.halehoundforge.fire.ui.fragments.TerminalFragment
 import com.halehoundforge.fire.ui.fragments.WifiFragment
 
 class MainActivity : AppCompatActivity() {
@@ -33,7 +34,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.root.findViewById<TextView>(R.id.headerVersion)?.text =
             "v${BuildConfig.VERSION_NAME.substringBefore("-")}"
-        binding.root.findViewById<TextView>(R.id.modeBanner)?.text = "◆ BLUE TEAM · HARDEN KIT"
+        binding.root.findViewById<TextView>(R.id.modeBanner)?.text = "◆ OPS · GROK-FRIENDLY"
         binding.root.findViewById<TextView>(R.id.headerTitle)?.text = "HALEHOUND-FIRE"
 
         if (savedInstanceState == null) {
@@ -45,7 +46,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_home -> open(HomeFragment())
                 R.id.nav_harden -> open(HardenFragment())
                 R.id.nav_guard -> open(GuardianFragment())
-                R.id.nav_wifi -> open(WifiFragment())
+                R.id.nav_term -> open(TerminalFragment())
                 R.id.nav_cyd -> open(CydFragment())
                 else -> false
             }
@@ -61,7 +62,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_home -> open(HomeFragment())
                 R.id.nav_harden -> open(HardenFragment())
                 R.id.nav_guard -> open(GuardianFragment())
-                R.id.nav_wifi -> open(WifiFragment())
+                R.id.nav_term -> open(TerminalFragment())
                 R.id.nav_cyd -> open(CydFragment())
             }
         }
@@ -76,6 +77,12 @@ class MainActivity : AppCompatActivity() {
     fun openBle() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, BleFragment())
+            .commit()
+    }
+
+    fun openWifi() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, WifiFragment())
             .commit()
     }
 

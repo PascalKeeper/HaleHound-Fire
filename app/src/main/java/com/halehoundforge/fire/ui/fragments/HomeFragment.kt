@@ -27,7 +27,7 @@ class HomeFragment : Fragment() {
         binding.capabilityMatrix.text = DeviceProfile.capabilityMatrix(requireContext())
 
         // Arsenal tiles → CYD menu-tree style navigation
-        binding.tileWifi.setOnClickListener { host?.navigateTo(R.id.nav_wifi) }
+        binding.tileWifi.setOnClickListener { host?.openWifi() }
         binding.tileBle.setOnClickListener { host?.openBle() }
         binding.tileGuard.setOnClickListener { host?.navigateTo(R.id.nav_guard) }
         binding.tileSigint.setOnClickListener {
@@ -35,7 +35,7 @@ class HomeFragment : Fragment() {
             Toast.makeText(requireContext(), "HARDEN › network harden arsenal", Toast.LENGTH_SHORT).show()
         }
         binding.tileCyd.setOnClickListener { host?.navigateTo(R.id.nav_cyd) }
-        binding.tileAbout.setOnClickListener { host?.openAbout() }
+        binding.tileAbout.setOnClickListener { host?.navigateTo(R.id.nav_term) }
     }
 
     override fun onDestroyView() {

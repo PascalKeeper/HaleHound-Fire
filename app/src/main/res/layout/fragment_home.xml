@@ -169,12 +169,12 @@
                 android:orientation="vertical"
                 android:padding="8dp">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:fontFamily="monospace" android:text="⚙" android:textSize="16sp" />
+                    android:fontFamily="monospace" android:text=">_ " android:textColor="@color/cyd_green" android:textSize="16sp" />
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:layout_marginTop="4dp" android:fontFamily="monospace" android:gravity="center"
-                    android:text="ABOUT" android:textColor="@color/cyd_text" android:textSize="12sp" android:textStyle="bold" />
+                    android:text="TERM" android:textColor="@color/cyd_green" android:textSize="12sp" android:textStyle="bold" />
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:fontFamily="monospace" android:gravity="center" android:text="device / legal"
+                    android:fontFamily="monospace" android:gravity="center" android:text="ops console"
                     android:textColor="@color/cyd_text_muted" android:textSize="9sp" />
             </LinearLayout>
         </LinearLayout>

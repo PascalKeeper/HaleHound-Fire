@@ -1,0 +1,430 @@
+package com.halehoundforge.fire.terminal
+
+import android.annotation.SuppressLint
+import android.content.Context
+import com.halehoundforge.fire.BuildConfig
+import com.halehoundforge.fire.companion.CydDiscovery
+import com.halehoundforge.fire.core.DeviceProfile
+import com.halehoundforge.fire.hardening.HardeningEngine
+import com.halehoundforge.fire.hardening.HardeningKnowledge
+import com.halehoundforge.fire.radio.BleSurvey
+import com.halehoundforge.fire.radio.WifiSurvey
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.net.InetSocketAddress
+import java.net.Socket
+import java.util.Locale
+
+/**
+ * Easy, allowlisted ops terminal for humans + Grok Build agents.
+ * No freeform root shell — curated commands that call real engines.
+ */
+class OpsTerminalEngine(private val context: Context) {
+
+    data class Result(
+        val output: String,
+        val navigate: String? = null // fragment hint: harden|guard|wifi|cyd|ble|about|home
+    )
+
+    private val history = ArrayDeque<String>()
+
+    fun historyLines(n: Int = 20): List<String> = history.toList().takeLast(n)
+
+    suspend fun execute(raw: String): Result {
+        val line = raw.trim()
+        if (line.isEmpty()) return Result("")
+        history.addLast(line)
+        while (history.size > 80) history.removeFirst()
+
+        val parts = tokenize(line)
+        val cmd = parts.firstOrNull()?.lowercase(Locale.US) ?: return Result("")
+        val args = parts.drop(1)
+
+        return try {
+            when (cmd) {
+                "help", "?", "h" -> Result(HELP)
+                "agent", "grok", "protocol" -> Result(AGENT_PROTOCOL)
+                "clear", "cls" -> Result("__CLEAR__")
+                "history", "hist" -> Result(
+                    historyLines().mapIndexed { i, s -> "${i + 1}  $s" }.joinToString("\n")
+                        .ifEmpty { "(empty)" }
+                )
+                "status", "whoami", "device", "info" -> Result(statusBlock())
+                "harden", "audit", "score" -> runHarden()
+                "wifi", "wlanscan", "scanwifi" -> runWifi()
+                "ble", "blescan" -> runBle()
+                "cyd", "discover" -> runCyd()
+                "guard", "guardian" -> Result(
+                    "Local Guardian is always-on in the GUARD tab.\n" +
+                        "Sensors: disconnect storms · RSSI cliffs · BSSID churn · latency.\n" +
+                        "Tip: open guard  |  chips: GUARD",
+                    navigate = "guard"
+                )
+                "ports", "portscan" -> runPorts(args)
+                "ping" -> runPing(args)
+                "dns" -> Result(dnsHelp())
+                "getprop" -> runGetprop(args)
+                "sh", "shell" -> runSafeShell(args)
+                "open", "goto", "nav" -> {
+                    val target = args.firstOrNull()?.lowercase(Locale.US) ?: "help"
+                    val map = mapOf(
+                        "harden" to "harden", "audit" to "harden",
+                        "guard" to "guard", "guardian" to "guard",
+                        "wifi" to "wifi", "wlan" to "wifi",
+                        "cyd" to "cyd", "ble" to "ble",
+                        "about" to "about", "home" to "home", "arsenal" to "home",
+                        "term" to "term", "terminal" to "term"
+                    )
+                    val nav = map[target]
+                    if (nav != null) Result("Opening $nav …", navigate = nav)
+                    else Result("Unknown target. Try: open harden|guard|wifi|cyd|ble|about|home")
+                }
+                "chips", "menu" -> Result(CHIPS_HELP)
+                "version", "ver" -> Result(
+                    "HaleHound Fire ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n" +
+                        BuildConfig.APPLICATION_ID
+                )
+                "thanks", "dig", "family" -> Result(
+                    "Copy that. Grok Build stays behind the glass;\n" +
+                        "you keep living. Terminal is agent-friendly:\n" +
+                        "  help · agent · harden · wifi · cyd · status"
+                )
+                else -> Result(
+                    "Unknown command: $cmd\nType  help  or tap a chip below."
+                )
+            }
+        } catch (e: Exception) {
+            Result("ERROR: ${e.message ?: e.javaClass.simpleName}")
+        }
+    }
+
+    private fun tokenize(line: String): List<String> {
+        val out = mutableListOf<String>()
+        val cur = StringBuilder()
+        var inQ = false
+        for (c in line) {
+            when {
+                c == '"' -> inQ = !inQ
+                c.isWhitespace() && !inQ -> {
+                    if (cur.isNotEmpty()) {
+                        out += cur.toString()
+                        cur.clear()
+                    }
+                }
+                else -> cur.append(c)
+            }
+        }
+        if (cur.isNotEmpty()) out += cur.toString()
+        return out
+    }
+
+    private fun statusBlock(): String = buildString {
+        appendLine("═══ HALEHOUND-FIRE STATUS ═══")
+        appendLine(DeviceProfile.hostBanner(context))
+        appendLine()
+        appendLine(DeviceProfile.hostInfoBlock(context))
+        appendLine()
+        appendLine("App ${BuildConfig.VERSION_NAME} · Blue Team · local engines ready")
+        appendLine("Type  agent  for Grok Build command protocol")
+    }
+
+    private suspend fun runHarden(): Result = withContext(Dispatchers.IO) {
+        val r = HardeningEngine(context).runFullAudit()
+        Result(
+            buildString {
+                appendLine("═══ HARDEN AUDIT ═══")
+                appendLine("SCORE ${r.score}/100 · ${r.grade}")
+                appendLine(r.wifiLine)
+                appendLine("${r.dnsLine} · gw=${r.gateway} ip=${r.localIp}")
+                appendLine("--- findings ---")
+                r.findings.take(12).forEach { appendLine("• $it") }
+                appendLine("--- open danger ports ---")
+                val open = r.portHits.filter { it.open }
+                if (open.isEmpty()) appendLine("(none)")
+                else open.take(15).forEach {
+                    appendLine("${it.host}:${it.port} ${it.name} [${it.risk}]")
+                }
+            }.trimEnd(),
+            navigate = null
+        )
+    }
+
+    @SuppressLint("MissingPermission")
+    private suspend fun runWifi(): Result = withContext(Dispatchers.IO) {
+        try {
+            val rows = WifiSurvey(context).scanOnce()
+            Result(
+                buildString {
+                    appendLine("═══ WIFI SURVEY (${rows.size}) ═══")
+                    rows.take(20).forEach {
+                        appendLine("${it.rssi}dBm  ${it.line1}")
+                        appendLine("   ${it.bssid} ch${it.channel} ${it.security}")
+                    }
+                    if (rows.size > 20) appendLine("… ${rows.size - 20} more")
+                }.trimEnd()
+            )
+        } catch (e: Exception) {
+            Result("WIFI scan failed: ${e.message}\nGrant location permission if prompted.")
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private suspend fun runBle(): Result = withContext(Dispatchers.IO) {
+        try {
+            val rows = BleSurvey(context).scan(6_000L)
+            Result(
+                buildString {
+                    appendLine("═══ BLE SURVEY (${rows.size}) ═══")
+                    rows.take(20).forEach {
+                        appendLine("${it.rssi}dBm  ${it.line1}")
+                        appendLine("   ${it.address}")
+                    }
+                }.trimEnd()
+            )
+        } catch (e: Exception) {
+            Result("BLE scan failed: ${e.message}")
+        }
+    }
+
+    private suspend fun runCyd(): Result {
+        val hits = CydDiscovery.discover()
+        return Result(
+            buildString {
+                appendLine("═══ CYD DISCOVER ═══")
+                if (hits.isEmpty()) {
+                    appendLine("No softAP HTTP endpoints found.")
+                    appendLine("Join CYD AP or same LAN, then: cyd")
+                    appendLine("Flash: flash.halehound.com (desktop)")
+                } else {
+                    hits.forEach { appendLine("${it.url}  ${it.title}  ${it.latencyMs}ms") }
+                }
+            }.trimEnd(),
+            navigate = if (hits.isNotEmpty()) "cyd" else null
+        )
+    }
+
+    private suspend fun runPorts(args: List<String>): Result = withContext(Dispatchers.IO) {
+        val host = args.firstOrNull() ?: return@withContext Result("Usage: ports <host>\nExample: ports 192.168.1.1")
+        val ports = HardeningKnowledge.dangerPorts.map { it.port }
+        val lines = ports.map { p ->
+            val open = try {
+                Socket().use { s ->
+                    s.connect(InetSocketAddress(host, p), 300)
+                    true
+                }
+            } catch (_: Exception) {
+                false
+            }
+            val meta = HardeningKnowledge.portByNumber(p)
+            if (open) "OPEN  $p  ${meta?.name ?: ""}  [${meta?.risk}]" else null
+        }.filterNotNull()
+        Result(
+            buildString {
+                appendLine("═══ PORTS $host ═══")
+                if (lines.isEmpty()) appendLine("No danger-set ports open (or host down).")
+                else lines.forEach { appendLine(it) }
+            }.trimEnd()
+        )
+    }
+
+    private suspend fun runPing(args: List<String>): Result = withContext(Dispatchers.IO) {
+        val host = args.firstOrNull() ?: return@withContext Result("Usage: ping <host>")
+        // TCP connect fallback — ICMP often blocked for apps
+        val ports = listOf(80, 443, 53)
+        val sb = StringBuilder("═══ REACH $host ═══\n")
+        var any = false
+        for (p in ports) {
+            val start = System.currentTimeMillis()
+            val ok = try {
+                Socket().use { s ->
+                    s.connect(InetSocketAddress(host, p), 800)
+                    true
+                }
+            } catch (_: Exception) {
+                false
+            }
+            if (ok) {
+                any = true
+                sb.appendLine("tcp/$p  ok  ${System.currentTimeMillis() - start}ms")
+            }
+        }
+        if (!any) sb.appendLine("No TCP 80/443/53 response (ICMP not used).")
+        // try system ping if present
+        val sys = safeExec(listOf("ping", "-c", "1", "-W", "1", host), 3000)
+        if (sys.isNotBlank()) {
+            sb.appendLine("--- system ping ---")
+            sb.appendLine(sys.lines().take(6).joinToString("\n"))
+        }
+        Result(sb.toString().trimEnd())
+    }
+
+    private fun dnsHelp(): String = buildString {
+        appendLine("═══ DNS PLAYBOOK ═══")
+        HardeningKnowledge.dnsProfiles.forEach {
+            appendLine("${it.name}")
+            appendLine("  ${it.primary} / ${it.secondary}")
+            appendLine("  ${it.note}")
+        }
+        appendLine()
+        appendLine("On Fire: Settings → Network → Private DNS")
+        appendLine("  1dot1dot1dot1.cloudflare-dns.com")
+        appendLine("  dns.quad9.net")
+        appendLine("Or: open chips → HARDEN → DNS SETTINGS")
+    }
+
+    private suspend fun runGetprop(args: List<String>): Result = withContext(Dispatchers.IO) {
+        val key = args.firstOrNull()
+        if (key.isNullOrBlank()) {
+            val interesting = listOf(
+                "ro.product.model", "ro.build.version.release", "ro.build.version.fireos",
+                "ro.serialno", "wifi.interface"
+            )
+            val sb = StringBuilder("═══ GETPROP ═══\n")
+            interesting.forEach { k ->
+                val v = safeExec(listOf("getprop", k), 1500).trim()
+                sb.appendLine("$k=$v")
+            }
+            sb.appendLine("Usage: getprop <key>")
+            return@withContext Result(sb.toString().trimEnd())
+        }
+        val v = safeExec(listOf("getprop", key), 2000).trim()
+        Result("$key=$v")
+    }
+
+    private suspend fun runSafeShell(args: List<String>): Result = withContext(Dispatchers.IO) {
+        if (args.isEmpty()) {
+            return@withContext Result(
+                "Safe shell allowlist only:\n" +
+                    "  sh id | sh uname | sh getprop <k> | sh ip addr | sh ip route\n" +
+                    "No freeform root. Prefer: status harden wifi cyd"
+            )
+        }
+        val head = args[0].lowercase(Locale.US)
+        val allowed = setOf("id", "uname", "getprop", "ip", "date", "echo")
+        if (head !in allowed) {
+            return@withContext Result("Blocked: $head (not in allowlist). Type: sh")
+        }
+        // reconstruct limited argv
+        val argv = when (head) {
+            "ip" -> {
+                val sub = args.getOrNull(1)?.lowercase(Locale.US)
+                if (sub !in setOf("addr", "route", "link")) {
+                    return@withContext Result("Allowed: sh ip addr|route|link")
+                }
+                listOf("ip") + args.drop(1).take(3)
+            }
+            "getprop" -> listOf("getprop") + listOfNotNull(args.getOrNull(1)).take(1)
+            "echo" -> listOf("echo") + args.drop(1).take(8)
+            "uname" -> listOf("uname", "-a")
+            "date" -> listOf("date")
+            "id" -> listOf("id")
+            else -> listOf(head)
+        }
+        val out = safeExec(argv, 4000)
+        Result(out.ifBlank { "(no output)" })
+    }
+
+    private fun safeExec(argv: List<String>, timeoutMs: Long): String {
+        return try {
+            val pb = ProcessBuilder(argv)
+                .redirectErrorStream(true)
+            val p = pb.start()
+            val reader = BufferedReader(InputStreamReader(p.inputStream))
+            val deadline = System.currentTimeMillis() + timeoutMs
+            val sb = StringBuilder()
+            while (System.currentTimeMillis() < deadline) {
+                if (reader.ready()) {
+                    val line = reader.readLine() ?: break
+                    sb.appendLine(line)
+                    if (sb.length > 8000) break
+                } else if (!p.isAlive) {
+                    while (reader.ready()) {
+                        sb.appendLine(reader.readLine() ?: break)
+                    }
+                    break
+                } else {
+                    Thread.sleep(20)
+                }
+            }
+            if (p.isAlive) p.destroy()
+            sb.toString().trim()
+        } catch (e: Exception) {
+            "(exec failed: ${e.message})"
+        }
+    }
+
+    companion object {
+        val QUICK_CHIPS = listOf(
+            "help", "status", "harden", "wifi", "ble", "cyd", "guard", "dns", "agent", "clear"
+        )
+
+        private val HELP = """
+            ╔══════════════════════════════════════╗
+            ║  HHF OPS TERMINAL — easy mode        ║
+            ║  Humans tap chips · Agents type cmds ║
+            ╚══════════════════════════════════════╝
+
+            CORE
+              help          this screen
+              agent         Grok Build protocol
+              status        device + app info
+              clear         wipe transcript
+
+            ARSENAL (runs on this tablet)
+              harden        full harden audit + score
+              wifi          passive Wi‑Fi survey
+              ble           BLE advertisement survey
+              cyd           discover CYD softAP
+              guard         open local Guardian
+              ports <ip>    danger-port probe host
+              ping <host>   TCP reachability
+              dns           Private DNS playbook
+
+            NAV
+              open harden|guard|wifi|cyd|ble|about|home
+
+            SAFE SHELL
+              sh id | sh uname | sh getprop [key]
+              sh ip addr | sh ip route
+
+            Dig it: keep living — Grok handles the glass.
+        """.trimIndent()
+
+        private val AGENT_PROTOCOL = """
+            ═══ GROK BUILD / AGENT PROTOCOL ═══
+            Goal: agents work behind the scenes; humans chill.
+
+            PREFERRED COMMANDS (deterministic)
+              status
+              harden
+              wifi
+              cyd
+              ports <gateway-or-host>
+              ping <host>
+              getprop ro.product.model
+
+            NAV (UI)
+              open harden
+              open guard
+              open cyd
+
+            OUTPUT
+              Plain text blocks. SCORE lines for harden.
+              OPEN host:port for findings.
+
+            WINDOWS SIDE (laptop, optional)
+              tools\grok-fire-ops.ps1 install|launch|log|doctor
+
+            DO NOT
+              Request freeform root shell
+              Assume Npcap on Fire
+              Run offensive TX from this terminal
+
+            ETHICS: authorized / Blue Team only.
+        """.trimIndent()
+
+        private val CHIPS_HELP = "Chips: " + QUICK_CHIPS.joinToString(" · ")
+    }
+}
