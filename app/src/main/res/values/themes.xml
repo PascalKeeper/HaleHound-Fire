@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.HaleHoundFire" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.HaleHoundFire" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorPrimary">@color/cyd_amber</item>
         <item name="colorPrimaryVariant">@color/cyd_amber_dim</item>
         <item name="colorOnPrimary">@color/cyd_black</item>
@@ -14,8 +14,10 @@
         <item name="android:windowBackground">@color/cyd_bg</item>
         <item name="android:textColorPrimary">@color/cyd_text</item>
         <item name="android:textColorSecondary">@color/cyd_text_dim</item>
+        <item name="android:forceDarkAllowed">false</item>
         <item name="materialButtonStyle">@style/Widget.Cyd.Button</item>
         <item name="bottomNavigationStyle">@style/Widget.Cyd.BottomNav</item>
+        <item name="isLightTheme">false</item>
     </style>
 
     <style name="Widget.Cyd.Button" parent="Widget.MaterialComponents.Button">

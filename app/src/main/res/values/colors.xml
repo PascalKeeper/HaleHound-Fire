@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- HaleHound CYD-inspired palette (unofficial companion) -->
 <resources>
-    <!-- Core surfaces — near-black TFT look -->
-    <color name="cyd_bg">#000000</color>
-    <color name="cyd_surface">#0A0A0A</color>
-    <color name="cyd_panel">#111111</color>
-    <color name="cyd_panel_hi">#1A1A1A</color>
-    <color name="cyd_border">#2A2A2A</color>
-    <color name="cyd_border_hi">#3D3D3D</color>
+    <!-- Core surfaces — TFT look, lifted slightly so Fire LCD + screencap show structure -->
+    <color name="cyd_bg">#050805</color>
+    <color name="cyd_surface">#0C100C</color>
+    <color name="cyd_panel">#141A14</color>
+    <color name="cyd_panel_hi">#1C241C</color>
+    <color name="cyd_border">#2E3A2E</color>
+    <color name="cyd_border_hi">#4A6A4A</color>
 
     <!-- Accents matching typical HaleHound / ESP32-DIV chrome -->
     <color name="cyd_green">#00FF41</color>

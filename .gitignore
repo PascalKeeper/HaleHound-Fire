@@ -37,3 +37,6 @@ Thumbs.db
 # Logs / temp
 *.log
 *.tmp
+
+device-screenshot*.png
+ui-dump.xml
