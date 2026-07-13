@@ -32,6 +32,20 @@ No separate folder literally named “Hale Network Guardian” was found. Closes
 | True deauth frame count | HaleHound CYD WiFi Guardian | **NO on Fire** | Point users at CYD for real frames |
 | RDP/SMB share killer | SecurityMonitor.ps1 | **NO** | Desktop host hardening only |
 
+## CYD companion (v1.1.0+)
+
+| Feature | Fire surface | Notes |
+|---------|--------------|-------|
+| Live HTTP telemetry | CYD tab + `cyd status` | SoftAP often `192.168.4.1`; path probe + latency |
+| Loot hints scrape | CYD tab + `cyd loot` | JSON/HTML/filename best-effort |
+| Loot offload vault | PULL LOOT + `cyd pull` | `Android/data/.../cyd_loot/`; optional `.hhf` encrypt |
+| Vault list | CYD tab + `cyd vault` | Local sessions only — no phone-home |
+| SoftAP discover | `cyd discover` | Quick host scan |
+
+Private LAN/softAP always allowed. Public hosts only via HomeCallPolicy (HTTPS sensei path).
+
 ## Ethics
 
 All Fire-side Guardian features are **defensive / Blue Team**. No deauth transmission. True frame-level Guardian remains on authorized ESP32 CYD hardware.
+
+Kitchen secrets / feature backlog: see **KITCHEN_SECRETS.md** (no withholding rule).

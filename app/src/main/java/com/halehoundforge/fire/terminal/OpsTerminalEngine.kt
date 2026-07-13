@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import com.halehoundforge.fire.BuildConfig
 import com.halehoundforge.fire.companion.CydDiscovery
+import com.halehoundforge.fire.companion.CydLinkClient
+import com.halehoundforge.fire.companion.CydLootVault
 import com.halehoundforge.fire.core.DeviceProfile
 import com.halehoundforge.fire.hardening.FirewallBatchGenerator
 import com.halehoundforge.fire.hardening.HardeningEngine
@@ -66,7 +68,8 @@ class OpsTerminalEngine(private val context: Context) {
                 "perf", "latency", "profile" -> runPerf(args)
                 "wifi", "wlanscan", "scanwifi" -> runWifi()
                 "ble", "blescan" -> runBle()
-                "cyd", "discover" -> runCyd()
+                "cyd" -> runCyd(args)
+                "discover" -> runCyd(listOf("discover"))
                 "guard", "guardian" -> Result(
                     "Local Guardian is always-on in the GUARD tab.\n" +
                         "Sensors: disconnect storms · RSSI cliffs · BSSID churn · latency.\n" +
@@ -316,20 +319,175 @@ class OpsTerminalEngine(private val context: Context) {
         }
     }
 
-    private suspend fun runCyd(): Result {
+    /**
+     * CYD companion ops:
+     *   cyd | cyd status | cyd telemetry  — full HTTP surface probe + telemetry snapshot
+     *   cyd loot                          — loot hints from live probe
+     *   cyd pull                          — pull loot into Fire vault
+     *   cyd discover                      — quick softAP host scan only
+     *   cyd vault                         — list local vault files
+     *   cyd <url>                         — probe explicit base URL
+     */
+    private suspend fun runCyd(args: List<String>): Result {
+        val sub = args.firstOrNull()?.lowercase(Locale.US)
+        return when (sub) {
+            null, "status", "telemetry", "probe", "tel" -> runCydTelemetry(null)
+            "loot", "files" -> runCydLoot()
+            "pull", "offload" -> runCydPull()
+            "vault", "local" -> runCydVault()
+            "discover", "scan", "find" -> runCydDiscover()
+            "help", "?" -> Result(
+                """
+                ═══ CYD COMMANDS ═══
+                cyd / cyd status   live telemetry probe
+                cyd loot           list loot hints
+                cyd pull           pull loot → Fire vault
+                cyd vault          list local vault
+                cyd discover       softAP host scan
+                cyd <url>          probe explicit base
+                open cyd           open CYD UI tab
+                """.trimIndent()
+            )
+            else -> {
+                // Treat first arg as host/URL if it looks like one
+                if (sub.contains('.') || sub.startsWith("http") || sub.startsWith("192") || sub.startsWith("10.")) {
+                    runCydTelemetry(args.first())
+                } else {
+                    Result("Unknown cyd subcommand: $sub\nTry: cyd help")
+                }
+            }
+        }
+    }
+
+    private fun cydBaseFromStore(): String {
+        val saved = SecureStore.getString(context, "cyd_base_url", "http://192.168.4.1")
+        return saved.ifBlank { "http://192.168.4.1" }
+    }
+
+    private suspend fun runCydDiscover(): Result {
         val hits = CydDiscovery.discover()
         return Result(
             buildString {
                 appendLine("═══ CYD DISCOVER ═══")
                 if (hits.isEmpty()) {
                     appendLine("No softAP HTTP endpoints found.")
-                    appendLine("Join CYD AP or same LAN, then: cyd")
-                    appendLine("Flash: flash.halehound.com (desktop)")
+                    appendLine("Join CYD AP or same LAN, then: cyd status")
                 } else {
                     hits.forEach { appendLine("${it.url}  ${it.title}  ${it.latencyMs}ms") }
+                    appendLine("Tip: cyd status  |  cyd loot  |  cyd pull")
                 }
             }.trimEnd(),
             navigate = if (hits.isNotEmpty()) "cyd" else null
+        )
+    }
+
+    private suspend fun runCydTelemetry(explicitBase: String?): Result {
+        val base = explicitBase?.let { CydLinkClient.normalizeBase(it) } ?: cydBaseFromStore()
+        val tel = if (explicitBase == null) {
+            // Prefer saved host; fall back to auto-discover
+            val primary = CydLinkClient.connectAndProbe(base, context)
+            if (primary.online) primary
+            else CydLinkClient.autoDiscoverTelemetry(context).firstOrNull() ?: primary
+        } else {
+            CydLinkClient.connectAndProbe(base, context)
+        }
+        SecureStore.putString(context, "cyd_base_url", tel.baseUrl)
+        CydLootVault.writeTelemetrySnapshot(context, tel)
+        return Result(
+            buildString {
+                appendLine("═══ CYD TELEMETRY ═══")
+                appendLine(if (tel.online) "● ONLINE" else "○ OFFLINE")
+                appendLine("base     : ${tel.baseUrl}")
+                appendLine("latency  : ${tel.latencyMs} ms")
+                appendLine("title    : ${tel.title.take(100)}")
+                appendLine("heap     : ${tel.heapHint ?: "—"}")
+                appendLine("sd/free  : ${tel.freeSdHint ?: "—"}")
+                appendLine("mode     : ${tel.modeHint ?: "—"}")
+                appendLine("paths    : ${tel.rawPaths.size} live")
+                appendLine("loot     : ${tel.lootHints.size} hint(s)")
+                if (tel.rawPaths.isNotEmpty()) {
+                    appendLine("--- HTTP ---")
+                    tel.rawPaths.entries.sortedBy { it.key }.take(20).forEach { (k, v) ->
+                        appendLine("  $v  $k")
+                    }
+                }
+                tel.notes.forEach { appendLine("· $it") }
+                if (tel.online && tel.lootHints.isNotEmpty()) {
+                    appendLine("Next: cyd loot  |  cyd pull")
+                } else if (!tel.online) {
+                    appendLine("Join CYD softAP (often 192.168.4.1) then retry.")
+                }
+            }.trimEnd(),
+            navigate = "cyd"
+        )
+    }
+
+    private suspend fun runCydLoot(): Result {
+        val base = cydBaseFromStore()
+        val tel = CydLinkClient.connectAndProbe(base, context)
+        SecureStore.putString(context, "cyd_base_url", tel.baseUrl)
+        return Result(
+            buildString {
+                appendLine("═══ CYD LOOT HINTS ═══")
+                appendLine("base: ${tel.baseUrl}  online=${tel.online}")
+                if (!tel.online) {
+                    appendLine("CYD offline — cannot list loot.")
+                } else if (tel.lootHints.isEmpty()) {
+                    appendLine("No filenames scraped yet.")
+                    appendLine("Firmware must serve /sd, /loot, or directory HTML/JSON.")
+                } else {
+                    tel.lootHints.take(40).forEach {
+                        appendLine("[${it.category}] ${it.name}")
+                        appendLine("   ${it.path}")
+                    }
+                    if (tel.lootHints.size > 40) appendLine("… ${tel.lootHints.size - 40} more")
+                    appendLine("Pull: cyd pull")
+                }
+            }.trimEnd(),
+            navigate = "cyd"
+        )
+    }
+
+    private suspend fun runCydPull(): Result {
+        val base = cydBaseFromStore()
+        val tel = CydLinkClient.connectAndProbe(base, context)
+        if (!tel.online) {
+            return Result("CYD offline — join softAP / set host, then: cyd pull", navigate = "cyd")
+        }
+        CydLootVault.writeTelemetrySnapshot(context, tel)
+        if (tel.lootHints.isEmpty()) {
+            return Result(
+                "No loot hints to pull. Telemetry snapshot saved to vault.\n" +
+                    CydLootVault.vaultRoot(context).absolutePath,
+                navigate = "cyd"
+            )
+        }
+        val files = CydLootVault.pullAll(context, tel.baseUrl, tel.lootHints, maxFiles = 24)
+        return Result(
+            buildString {
+                appendLine("═══ CYD LOOT PULL ═══")
+                appendLine("pulled ${files.size} file(s) (max 24)")
+                appendLine(CydLootVault.vaultRoot(context).absolutePath)
+                files.take(20).forEach { appendLine("  ${it.name}  ${it.length()}b") }
+                if (files.size > 20) appendLine("… ${files.size - 20} more")
+                appendLine("List: cyd vault")
+            }.trimEnd(),
+            navigate = "cyd"
+        )
+    }
+
+    private fun runCydVault(): Result {
+        val files = CydLootVault.listLocal(context)
+        return Result(
+            buildString {
+                appendLine("═══ FIRE LOOT VAULT ═══")
+                appendLine(CydLootVault.vaultRoot(context).absolutePath)
+                if (files.isEmpty()) appendLine("(empty — cyd pull when linked)")
+                else files.take(30).forEach {
+                    appendLine("${it.name}  ${it.length()}b")
+                }
+            }.trimEnd(),
+            navigate = "cyd"
         )
     }
 
@@ -505,7 +663,10 @@ class OpsTerminalEngine(private val context: Context) {
               firewall      gen Windows netsh .bat (PC apply)
               wifi          passive Wi‑Fi survey
               ble           BLE advertisement survey
-              cyd           discover CYD softAP
+              cyd           CYD telemetry (see cyd help)
+              cyd loot      list loot hints from CYD
+              cyd pull      offload loot → Fire vault
+              cyd vault     list local vault files
               guard         open local Guardian
               ports <ip>    danger-port probe host
               ping <host>   TCP reachability
@@ -529,7 +690,10 @@ class OpsTerminalEngine(private val context: Context) {
               status
               harden
               wifi
-              cyd
+              cyd status
+              cyd loot
+              cyd pull
+              cyd vault
               ports <gateway-or-host>
               ping <host>
               getprop ro.product.model
@@ -542,6 +706,7 @@ class OpsTerminalEngine(private val context: Context) {
             OUTPUT
               Plain text blocks. SCORE lines for harden.
               OPEN host:port for findings.
+              CYD: ONLINE/OFFLINE + loot count + vault paths.
 
             WINDOWS SIDE (laptop, optional)
               tools\grok-fire-ops.ps1 install|launch|log|doctor
