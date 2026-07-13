@@ -1,0 +1,33 @@
+﻿{
+    "disabled_ok":  60,
+    "before":  {
+                   "Time":  "2026-07-12T19:17:22.4339184-07:00",
+                   "Model":  "KFQUWI",
+                   "FireOS":  "8.0",
+                   "DataDf":  "/dev/block/mmcblk0p20  10G  4.7G  5.1G  49% /data/user/0",
+                   "MemTotal":  1825772,
+                   "MemFree":  65324,
+                   "MemAvailable":  585112,
+                   "Cached":  607816,
+                   "PackageCount":  239,
+                   "DisabledCount":  239,
+                   "AnimWindow":  "1.0",
+                   "AnimTrans":  "1.0",
+                   "AnimDur":  "1.0"
+               },
+    "after":  {
+                  "Time":  "2026-07-12T19:18:00.7448807-07:00",
+                  "Model":  "KFQUWI",
+                  "FireOS":  "8.0",
+                  "DataDf":  "/dev/block/mmcblk0p20  10G  4.7G  5.1G  49% /data/user/0",
+                  "MemTotal":  1825772,
+                  "MemFree":  92016,
+                  "MemAvailable":  729192,
+                  "Cached":  718004,
+                  "PackageCount":  239,
+                  "DisabledCount":  239,
+                  "AnimWindow":  "0.5",
+                  "AnimTrans":  "0.5",
+                  "AnimDur":  "0.5"
+              }
+}
