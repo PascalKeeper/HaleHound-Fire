@@ -35,7 +35,7 @@ class WifiFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.title.text = "Wi‑Fi Survey (passive)"
+        binding.title.text = "WIFI › SCANNER"
         binding.list.layoutManager = LinearLayoutManager(requireContext())
         binding.list.adapter = adapter
         binding.btnScan.setOnClickListener { ensurePermsAndScan() }

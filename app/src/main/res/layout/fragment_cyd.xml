@@ -2,90 +2,96 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/hh_bg"
+    android:background="@color/cyd_bg"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="8dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="CYD Companion"
-            android:textColor="@color/hh_text"
-            android:textSize="18sp"
+            android:fontFamily="monospace"
+            android:text="CYD LINK › COMPANION"
+            android:textColor="@color/cyd_amber"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="2dp"
+            android:fontFamily="monospace"
             android:text="@string/cyd_hint"
-            android:textColor="@color/hh_muted"
-            android:textSize="13sp" />
+            android:textColor="@color/cyd_text_muted"
+            android:textSize="10sp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDiscover"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:text="@string/discover" />
+            android:layout_marginTop="12dp"
+            android:text="DISCOVER CYD" />
 
         <TextView
             android:id="@+id/discoverStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/bg_card"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_cyd_panel"
             android:fontFamily="monospace"
-            android:lineSpacingExtra="3dp"
-            android:padding="14dp"
+            android:lineSpacingExtra="2dp"
+            android:padding="10dp"
             android:text="@string/cyd_not_found"
-            android:textColor="@color/hh_muted"
-            android:textSize="12sp" />
+            android:textColor="@color/cyd_text_dim"
+            android:textSize="10sp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="Manual host"
-            android:textColor="@color/hh_text"
-            android:textSize="14sp"
+            android:layout_marginTop="12dp"
+            android:fontFamily="monospace"
+            android:text="MANUAL HOST"
+            android:textColor="@color/cyd_amber"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
         <EditText
             android:id="@+id/hostInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_chip"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/bg_cyd_input"
+            android:fontFamily="monospace"
             android:hint="http://192.168.4.1"
             android:inputType="textUri"
-            android:padding="12dp"
-            android:textColor="@color/hh_text"
-            android:textColorHint="@color/hh_muted"
-            android:textSize="14sp" />
+            android:padding="10dp"
+            android:textColor="@color/cyd_text"
+            android:textColorHint="@color/cyd_text_muted"
+            android:textSize="12sp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnOpenHost"
             style="@style/Widget.HaleHound.Button.Outline"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Open in browser" />
+            android:layout_marginTop="6dp"
+            android:text="OPEN IN BROWSER" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:background="@drawable/bg_card"
-            android:lineSpacingExtra="4dp"
-            android:padding="14dp"
-            android:text="Flash HaleHound firmware from a Windows desktop browser at flash.halehound.com (Chrome/Edge + Web Serial). This Fire tablet cannot flash ESP32 boards via Web Serial reliably.\n\nOnce the CYD is online, use Discover or paste its AP IP (often 192.168.4.1) to open its web UI from the tablet."
-            android:textColor="@color/hh_muted"
-            android:textSize="13sp" />
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_cyd_panel"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="3dp"
+            android:padding="10dp"
+            android:text="Flash official firmware from Windows:\nflash.halehound.com\n\nChrome/Edge + Web Serial · not Silk on Fire."
+            android:textColor="@color/cyd_text_dim"
+            android:textSize="11sp" />
     </LinearLayout>
 </ScrollView>

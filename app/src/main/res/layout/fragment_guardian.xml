@@ -2,88 +2,94 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/hh_bg"
+    android:background="@color/cyd_bg"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="8dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Network Guardian"
-            android:textColor="@color/hh_accent"
-            android:textSize="18sp"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.06"
+            android:text="JAM DETECT › WIFI GUARDIAN"
+            android:textColor="@color/cyd_green"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:text="Blue Team · ported from NetworkMonitor_v2 + WiFi Guardian heuristics"
-            android:textColor="@color/hh_muted"
-            android:textSize="11sp" />
+            android:fontFamily="monospace"
+            android:text="heuristic · stock fire os · blue team"
+            android:textColor="@color/cyd_text_muted"
+            android:textSize="10sp" />
 
         <TextView
             android:id="@+id/predictiveStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:background="@drawable/bg_card"
-            android:padding="12dp"
+            android:background="@drawable/bg_cyd_panel"
+            android:fontFamily="monospace"
+            android:padding="10dp"
             android:text="Starting…"
-            android:textColor="@color/hh_text"
-            android:textSize="13sp"
+            android:textColor="@color/cyd_green"
+            android:textSize="12sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/linkBlock"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_card"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_cyd_panel"
             android:fontFamily="monospace"
             android:lineSpacingExtra="2dp"
-            android:padding="12dp"
-            android:textColor="@color/hh_text"
-            android:textSize="11sp" />
+            android:padding="10dp"
+            android:textColor="@color/cyd_text"
+            android:textSize="10sp" />
 
         <TextView
             android:id="@+id/bwBlock"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_card"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_cyd_panel"
             android:fontFamily="monospace"
             android:lineSpacingExtra="2dp"
-            android:padding="12dp"
-            android:textColor="@color/hh_text"
-            android:textSize="11sp" />
+            android:padding="10dp"
+            android:textColor="@color/cyd_text"
+            android:textSize="10sp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="SSID lock (WiFiGuardianKiller-style)"
-            android:textColor="@color/hh_text"
-            android:textSize="13sp"
+            android:layout_marginTop="10dp"
+            android:fontFamily="monospace"
+            android:text="SSID LOCK"
+            android:textColor="@color/cyd_amber"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
         <EditText
             android:id="@+id/preferredSsid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:background="@drawable/bg_chip"
-            android:hint="Preferred SSID"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/bg_cyd_input"
+            android:fontFamily="monospace"
+            android:hint="preferred SSID"
             android:inputType="text"
             android:padding="10dp"
-            android:textColor="@color/hh_text"
-            android:textColorHint="@color/hh_muted"
-            android:textSize="13sp" />
+            android:textColor="@color/cyd_text"
+            android:textColorHint="@color/cyd_text_muted"
+            android:textSize="12sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -94,64 +100,62 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSetPreferred"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
                 android:layout_marginEnd="4dp"
                 android:layout_weight="1"
-                android:text="Set lock"
-                android:textSize="12sp" />
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="SET"
+                android:textSize="11sp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnReconnect"
                 style="@style/Widget.HaleHound.Button.Outline"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
                 android:layout_marginStart="4dp"
                 android:layout_weight="1"
-                android:text="Reconnect"
-                android:textSize="12sp" />
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="RECONNECT"
+                android:textSize="11sp" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/mitigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/bg_card"
-            android:lineSpacingExtra="3dp"
-            android:padding="12dp"
-            android:textColor="@color/hh_muted"
-            android:textSize="12sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Threat / disconnect radar"
-            android:textColor="@color/hh_text"
-            android:textSize="13sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/alertsBlock"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:background="@drawable/bg_card"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_cyd_panel"
             android:fontFamily="monospace"
-            android:lineSpacingExtra="2dp"
-            android:minHeight="120dp"
-            android:padding="12dp"
-            android:text="No anomalies yet."
-            android:textColor="@color/hh_muted"
+            android:lineSpacingExtra="3dp"
+            android:padding="10dp"
+            android:textColor="@color/cyd_text_dim"
             android:textSize="11sp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:fontFamily="monospace"
+            android:text="THREAT RADAR"
+            android:textColor="@color/cyd_red"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/alertsBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:layout_marginBottom="8dp"
-            android:text="Note: True 802.11 deauth frame capture needs monitor mode (Windows Npcap / HaleHound CYD). This tab uses disconnect-storm + latency heuristics on stock Fire OS."
-            android:textColor="@color/hh_muted"
+            android:background="@drawable/bg_cyd_panel"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp"
+            android:minHeight="100dp"
+            android:padding="10dp"
+            android:text="No anomalies yet."
+            android:textColor="@color/cyd_text_dim"
             android:textSize="10sp" />
     </LinearLayout>
 </ScrollView>

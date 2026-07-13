@@ -4,9 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.halehoundforge.fire.R
 import com.halehoundforge.fire.core.DeviceProfile
 import com.halehoundforge.fire.databinding.FragmentHomeBinding
+import com.halehoundforge.fire.ui.MainActivity
 
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
@@ -18,8 +21,22 @@ class HomeFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val host = activity as? MainActivity
+
         binding.hostInfo.text = DeviceProfile.hostInfoBlock(requireContext())
         binding.capabilityMatrix.text = DeviceProfile.capabilityMatrix(requireContext())
+
+        // Arsenal tiles → CYD menu-tree style navigation
+        binding.tileWifi.setOnClickListener { host?.navigateTo(R.id.nav_wifi) }
+        binding.tileBle.setOnClickListener { host?.navigateTo(R.id.nav_ble) }
+        binding.tileGuard.setOnClickListener { host?.navigateTo(R.id.nav_guard) }
+        binding.tileSigint.setOnClickListener {
+            // SIGINT passive = WiFi survey + guardian combined entry
+            host?.navigateTo(R.id.nav_wifi)
+            Toast.makeText(requireContext(), "SIGINT › passive AP survey (Fire)", Toast.LENGTH_SHORT).show()
+        }
+        binding.tileCyd.setOnClickListener { host?.navigateTo(R.id.nav_cyd) }
+        binding.tileAbout.setOnClickListener { host?.openAbout() }
     }
 
     override fun onDestroyView() {

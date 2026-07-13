@@ -3,9 +3,9 @@
     <string name="app_name">HaleHound Fire</string>
     <string name="app_tagline">Fire OS companion · passive arsenal · CYD bridge</string>
     <string name="valhalla_title">VALHALLA PROTOCOL</string>
-    <string name="valhalla_body">HaleHound Fire is an educational and authorized security toolkit for Amazon Fire tablets.\n\n• Use only on networks and devices you own or have written permission to test.\n• Stock Fire OS cannot run ESP32 HaleHound firmware — this app is a companion + passive survey layer.\n• Offensive radio modules (deauth, evil twin TX, sub-GHz replay, NFC clone, etc.) require a real ESP32 CYD with external modules.\n• Unauthorized attacks on third-party networks are illegal.\n\nBy continuing you confirm legal, scoped, ethical use only.</string>
-    <string name="valhalla_accept">I confirm authorized / legal use</string>
-    <string name="valhalla_decline">Decline &amp; exit</string>
+    <string name="valhalla_body">Every offensive module is gated. On Fire OS this companion unlocks BLUE TEAM only.\n\n• Use only on networks/devices you own or have written permission to test.\n• Stock Fire OS cannot run ESP32 HaleHound firmware.\n• Deauth / evil twin / SubGHz / NRF24 / NFC clone require a real CYD.\n• Unauthorized attacks on third-party networks are illegal.\n\nACCEPT = Blue Team passive arsenal on this tablet.\nDECLINE = exit.</string>
+    <string name="valhalla_accept">ACCEPT · BLUE TEAM</string>
+    <string name="valhalla_decline">DECLINE · EXIT</string>
     <string name="nav_home">Home</string>
     <string name="nav_guard">Guard</string>
     <string name="nav_wifi">Wi‑Fi</string>

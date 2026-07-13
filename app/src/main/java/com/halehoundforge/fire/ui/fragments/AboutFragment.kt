@@ -19,28 +19,29 @@ class AboutFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.aboutBody.text = """
-            HaleHound Fire ${BuildConfig.VERSION_NAME}
-            Package: ${BuildConfig.APPLICATION_ID}
+            HALEHOUND-FIRE  ${BuildConfig.VERSION_NAME}
+            ${BuildConfig.APPLICATION_ID}
 
-            Fire OS companion + Network Guardian (v0.2).
+            Layout modeled after HaleHound-CYD arsenal menu
+            (WiFi / BT / Jam Detect / SIGINT / CYD-only locks).
 
-            Official HaleHound (ESP32 CYD):
-            • https://halehound.com
-            • https://flash.halehound.com
-            • https://github.com/JesseCHale/HaleHound-CYD
+            OFFICIAL CYD FIRMWARE
+              halehound.com
+              flash.halehound.com
+              github.com/JesseCHale/HaleHound-CYD
 
-            This Fire app is independent companion software for Amazon Fire tablets.
-            It does not redistribute proprietary HaleHound firmware binaries.
+            THIS APP
+              Unofficial Fire OS companion — not ESP32 firmware.
+              No firmware binaries redistributed.
+              Blue Team only on stock Fire OS.
 
-            LEGAL / VALHALLA PROTOCOL
-            Use only with explicit authorization. Passive survey tools may still
-            expose sensitive network metadata — treat lab results carefully.
-            Offensive modules exist only on dedicated ESP32 CYD hardware with
-            external radios; this tablet cannot legally or technically replace them
-            for unauthorized attacks, and stock Fire OS blocks raw 802.11 injection.
+            VALHALLA PROTOCOL
+              Authorized use only. Offensive TX modules require
+              a real CYD + external radios under written scope.
 
-            Target hardware validated: Amazon Fire 7 (12th gen) KFQUWI / quartz
-            Fire OS 8.3.x (Android 11 API 30).
+            VALIDATED
+              Fire 7 12th gen  KFQUWI / quartz
+              Fire OS 8.3.x  ·  Android 11 API 30
         """.trimIndent()
     }
 

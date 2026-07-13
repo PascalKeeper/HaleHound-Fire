@@ -35,7 +35,7 @@ class BleFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.title.text = "BLE Survey (passive)"
+        binding.title.text = "BLUETOOTH › BLE SURVEY"
         binding.list.layoutManager = LinearLayoutManager(requireContext())
         binding.list.adapter = adapter
         binding.btnScan.setOnClickListener { ensurePermsAndScan() }

@@ -2,76 +2,92 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/hh_bg"
+    android:background="@color/cyd_bg"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="14dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:letterSpacing="0.12"
-            android:text="@string/valhalla_title"
-            android:textColor="@color/hh_accent"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="@string/app_name"
-            android:textColor="@color/hh_text"
-            android:textSize="28sp"
+            android:fontFamily="monospace"
+            android:gravity="center"
+            android:letterSpacing="0.14"
+            android:text="HALEHOUND-FIRE"
+            android:textColor="@color/cyd_amber"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="@string/app_tagline"
-            android:textColor="@color/hh_muted"
-            android:textSize="13sp" />
+            android:fontFamily="monospace"
+            android:gravity="center"
+            android:text="unofficial fire os companion"
+            android:textColor="@color/cyd_text_muted"
+            android:textSize="10sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:background="@color/cyd_green_dim" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_cyd_banner_amber"
+            android:fontFamily="monospace"
+            android:gravity="center"
+            android:letterSpacing="0.12"
+            android:padding="10dp"
+            android:text="◆ VALHALLA PROTOCOL"
+            android:textColor="@color/cyd_amber"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/bg_card"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_cyd_panel"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="12dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="monospace"
                 android:lineSpacingExtra="4dp"
                 android:text="@string/valhalla_body"
-                android:textColor="@color/hh_text"
-                android:textSize="14sp" />
+                android:textColor="@color/cyd_text"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/deviceBanner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:background="@drawable/bg_chip"
-            android:padding="12dp"
-            android:textColor="@color/hh_muted"
-            android:textSize="12sp"
-            android:fontFamily="monospace" />
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_cyd_panel"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp"
+            android:padding="10dp"
+            android:textColor="@color/cyd_green"
+            android:textSize="10sp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAccept"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/valhalla_accept" />
+            android:layout_marginTop="18dp"
+            android:text="ACCEPT · BLUE TEAM" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDecline"
@@ -79,6 +95,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/valhalla_decline" />
+            android:text="DECLINE · EXIT" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="monospace"
+            android:gravity="center"
+            android:text="Fire = passive / companion · CYD = full arsenal"
+            android:textColor="@color/cyd_text_muted"
+            android:textSize="9sp" />
     </LinearLayout>
 </ScrollView>

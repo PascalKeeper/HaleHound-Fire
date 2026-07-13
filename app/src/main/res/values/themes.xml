@@ -1,34 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.HaleHoundFire" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/hh_accent</item>
-        <item name="colorPrimaryVariant">@color/hh_accent_dim</item>
-        <item name="colorOnPrimary">@color/black</item>
-        <item name="colorSecondary">@color/hh_info</item>
-        <item name="colorOnSecondary">@color/black</item>
-        <item name="android:colorBackground">@color/hh_bg</item>
-        <item name="colorSurface">@color/hh_surface</item>
-        <item name="colorOnSurface">@color/hh_text</item>
-        <item name="android:statusBarColor">@color/hh_bg</item>
-        <item name="android:navigationBarColor">@color/hh_bg</item>
-        <item name="android:windowBackground">@color/hh_bg</item>
-        <item name="android:textColorPrimary">@color/hh_text</item>
-        <item name="android:textColorSecondary">@color/hh_muted</item>
-        <item name="materialButtonStyle">@style/Widget.HaleHound.Button</item>
+        <item name="colorPrimary">@color/cyd_amber</item>
+        <item name="colorPrimaryVariant">@color/cyd_amber_dim</item>
+        <item name="colorOnPrimary">@color/cyd_black</item>
+        <item name="colorSecondary">@color/cyd_green</item>
+        <item name="colorOnSecondary">@color/cyd_black</item>
+        <item name="android:colorBackground">@color/cyd_bg</item>
+        <item name="colorSurface">@color/cyd_panel</item>
+        <item name="colorOnSurface">@color/cyd_text</item>
+        <item name="android:statusBarColor">@color/cyd_bg</item>
+        <item name="android:navigationBarColor">@color/cyd_bg</item>
+        <item name="android:windowBackground">@color/cyd_bg</item>
+        <item name="android:textColorPrimary">@color/cyd_text</item>
+        <item name="android:textColorSecondary">@color/cyd_text_dim</item>
+        <item name="materialButtonStyle">@style/Widget.Cyd.Button</item>
+        <item name="bottomNavigationStyle">@style/Widget.Cyd.BottomNav</item>
     </style>
 
-    <style name="Widget.HaleHound.Button" parent="Widget.MaterialComponents.Button">
-        <item name="backgroundTint">@color/hh_accent</item>
-        <item name="android:textColor">@color/black</item>
-        <item name="cornerRadius">10dp</item>
-        <item name="android:textAllCaps">false</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
+    <style name="Widget.Cyd.Button" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/cyd_green</item>
+        <item name="android:textColor">@color/cyd_black</item>
+        <item name="cornerRadius">2dp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.06</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">44dp</item>
     </style>
+
+    <style name="Widget.HaleHound.Button" parent="Widget.Cyd.Button" />
 
     <style name="Widget.HaleHound.Button.Outline" parent="Widget.MaterialComponents.Button.OutlinedButton">
-        <item name="strokeColor">@color/hh_border</item>
-        <item name="android:textColor">@color/hh_text</item>
-        <item name="cornerRadius">10dp</item>
-        <item name="android:textAllCaps">false</item>
+        <item name="strokeColor">@color/cyd_green</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:textColor">@color/cyd_green</item>
+        <item name="cornerRadius">2dp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.06</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="backgroundTint">@android:color/transparent</item>
+    </style>
+
+    <style name="Widget.Cyd.BottomNav" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="itemIconTint">@color/cyd_bottom_nav_color</item>
+        <item name="itemTextColor">@color/cyd_bottom_nav_color</item>
+        <item name="itemRippleColor">@color/cyd_green_ghost</item>
+        <item name="elevation">0dp</item>
+        <item name="android:background">@color/cyd_panel</item>
+        <item name="labelVisibilityMode">labeled</item>
+    </style>
+
+    <style name="Text.Cyd.Title" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:textColor">@color/cyd_amber</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="Text.Cyd.Mono" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="android:textColor">@color/cyd_text</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textSize">11sp</item>
+    </style>
+
+    <style name="Text.Cyd.Label" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textColor">@color/cyd_text_dim</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.08</item>
     </style>
 </resources>

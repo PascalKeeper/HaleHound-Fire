@@ -5,15 +5,19 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:fillColor="#0B0F14"
+        android:fillColor="#000000"
         android:pathData="M0,0h108v108h-108z" />
+    <!-- Hound triangle mark -->
     <path
-        android:fillColor="#F0A500"
-        android:pathData="M30,72 L54,28 L78,72 Z" />
+        android:fillColor="#FFCC00"
+        android:pathData="M30,74 L54,26 L78,74 Z" />
     <path
-        android:fillColor="#0B0F14"
-        android:pathData="M44,62 L54,42 L64,62 Z" />
+        android:fillColor="#000000"
+        android:pathData="M44,64 L54,42 L64,64 Z" />
     <path
-        android:fillColor="#4DA3FF"
-        android:pathData="M28,78h52v6h-52z" />
+        android:fillColor="#00FF41"
+        android:pathData="M28,80h52v5h-52z" />
+    <path
+        android:fillColor="#00D4FF"
+        android:pathData="M36,88h36v3h-36z" />
 </vector>

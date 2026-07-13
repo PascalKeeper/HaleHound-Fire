@@ -2,82 +2,275 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/hh_bg"
+    android:background="@color/cyd_bg"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="8dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="HaleHound Fire"
-            android:textColor="@color/hh_accent"
-            android:textSize="22sp"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.12"
+            android:text="■ ARSENAL"
+            android:textAllCaps="true"
+            android:textColor="@color/cyd_green"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="6dp"
+            android:fontFamily="monospace"
+            android:text="Tap module · CYD-only tools shown locked"
+            android:textColor="@color/cyd_text_muted"
+            android:textSize="10sp" />
+
+        <!-- Row 1: WiFi | Bluetooth -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/tileWifi"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_cyd_tile"
+                android:gravity="center"
+                android:minHeight="76dp"
+                android:orientation="vertical"
+                android:padding="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:text="📡" android:textSize="16sp" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" android:fontFamily="monospace" android:gravity="center"
+                    android:text="WIFI" android:textColor="@color/cyd_cyan" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:gravity="center" android:text="scanner"
+                    android:textColor="@color/cyd_text_muted" android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/tileBle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_cyd_tile"
+                android:gravity="center"
+                android:minHeight="76dp"
+                android:orientation="vertical"
+                android:padding="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:text="🔵" android:textSize="16sp" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" android:fontFamily="monospace" android:gravity="center"
+                    android:text="BLUETOOTH" android:textColor="@color/cyd_blue" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:gravity="center" android:text="ble survey"
+                    android:textColor="@color/cyd_text_muted" android:textSize="9sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Row 2: Jam Detect | SIGINT -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/tileGuard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_cyd_tile"
+                android:gravity="center"
+                android:minHeight="76dp"
+                android:orientation="vertical"
+                android:padding="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:text="🛡" android:textSize="16sp" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" android:fontFamily="monospace" android:gravity="center"
+                    android:text="JAM DETECT" android:textColor="@color/cyd_green" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:gravity="center" android:text="wifi guardian"
+                    android:textColor="@color/cyd_text_muted" android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/tileSigint"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_cyd_tile"
+                android:gravity="center"
+                android:minHeight="76dp"
+                android:orientation="vertical"
+                android:padding="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:text="📊" android:textSize="16sp" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" android:fontFamily="monospace" android:gravity="center"
+                    android:text="SIGINT" android:textColor="@color/cyd_magenta" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:gravity="center" android:text="passive recon"
+                    android:textColor="@color/cyd_text_muted" android:textSize="9sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Row 3: CYD Bridge | Tools -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/tileCyd"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_cyd_tile"
+                android:gravity="center"
+                android:minHeight="76dp"
+                android:orientation="vertical"
+                android:padding="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:text="▣" android:textColor="@color/cyd_amber" android:textSize="16sp" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" android:fontFamily="monospace" android:gravity="center"
+                    android:text="CYD LINK" android:textColor="@color/cyd_amber" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:gravity="center" android:text="companion"
+                    android:textColor="@color/cyd_text_muted" android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/tileAbout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_cyd_tile"
+                android:gravity="center"
+                android:minHeight="76dp"
+                android:orientation="vertical"
+                android:padding="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:text="⚙" android:textSize="16sp" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" android:fontFamily="monospace" android:gravity="center"
+                    android:text="ABOUT" android:textColor="@color/cyd_text" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:gravity="center" android:text="device / legal"
+                    android:textColor="@color/cyd_text_muted" android:textSize="9sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.1"
+            android:text="■ CYD-ONLY (LOCKED)"
+            android:textColor="@color/cyd_text_muted"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="@string/passive_only"
-            android:textColor="@color/hh_muted"
-            android:textSize="13sp" />
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_cyd_tile_locked"
+                android:gravity="center"
+                android:minHeight="64dp"
+                android:orientation="vertical"
+                android:padding="6dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:text="2.4GHz" android:textColor="#444444" android:textSize="11sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:gravity="center" android:text="NRF24 · lock"
+                    android:textColor="#333333" android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_cyd_tile_locked"
+                android:gravity="center"
+                android:minHeight="64dp"
+                android:orientation="vertical"
+                android:padding="6dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:text="SubGHz" android:textColor="#444444" android:textSize="11sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:gravity="center" android:text="CC1101 · lock"
+                    android:textColor="#333333" android:textSize="9sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_cyd_tile_locked"
+                android:gravity="center"
+                android:minHeight="64dp"
+                android:orientation="vertical"
+                android:padding="6dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:text="RFID" android:textColor="#444444" android:textSize="11sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:fontFamily="monospace" android:gravity="center" android:text="PN532 · lock"
+                    android:textColor="#333333" android:textSize="9sp" />
+            </LinearLayout>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/hostInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:background="@drawable/bg_card"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_cyd_panel"
             android:fontFamily="monospace"
-            android:lineSpacingExtra="3dp"
-            android:padding="14dp"
-            android:textColor="@color/hh_text"
-            android:textSize="12sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="Capability matrix"
-            android:textColor="@color/hh_text"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:lineSpacingExtra="2dp"
+            android:padding="10dp"
+            android:textColor="@color/cyd_text_dim"
+            android:textSize="10sp" />
 
         <TextView
             android:id="@+id/capabilityMatrix"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_card"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_cyd_panel"
             android:fontFamily="monospace"
-            android:lineSpacingExtra="3dp"
-            android:padding="14dp"
-            android:textColor="@color/hh_text"
-            android:textSize="12sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="Architecture"
-            android:textColor="@color/hh_text"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_card"
-            android:lineSpacingExtra="4dp"
-            android:padding="14dp"
-            android:text="This is NOT ESP32 firmware running on Fire OS.\n\nLayer A — Fire tablet: Network Guardian, passive Wi‑Fi/BLE survey, CYD companion.\nLayer B — ESP32 CYD: full radios + true WiFi Guardian deauth frames.\n\nv0.2 ships Guardian heuristics from NetworkMonitor_v2 / WiFiGuardianKiller."
-            android:textColor="@color/hh_muted"
-            android:textSize="13sp" />
+            android:lineSpacingExtra="2dp"
+            android:padding="10dp"
+            android:textColor="@color/cyd_text_dim"
+            android:textSize="9sp" />
     </LinearLayout>
 </ScrollView>

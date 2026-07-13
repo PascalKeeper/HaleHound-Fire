@@ -1,17 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- HaleHound CYD-inspired palette (unofficial companion) -->
 <resources>
-    <color name="hh_bg">#0B0F14</color>
-    <color name="hh_surface">#141B24</color>
-    <color name="hh_surface2">#1C2633</color>
-    <color name="hh_border">#2A384A</color>
-    <color name="hh_text">#E8EEF7</color>
-    <color name="hh_muted">#8B9BB0</color>
-    <color name="hh_accent">#F0A500</color>
-    <color name="hh_accent_dim">#B37A00</color>
-    <color name="hh_danger">#E85D5D</color>
-    <color name="hh_ok">#3DDC97</color>
-    <color name="hh_info">#4DA3FF</color>
-    <color name="hh_chip">#243041</color>
-    <color name="black">#000000</color>
-    <color name="white">#FFFFFF</color>
+    <!-- Core surfaces — near-black TFT look -->
+    <color name="cyd_bg">#000000</color>
+    <color name="cyd_surface">#0A0A0A</color>
+    <color name="cyd_panel">#111111</color>
+    <color name="cyd_panel_hi">#1A1A1A</color>
+    <color name="cyd_border">#2A2A2A</color>
+    <color name="cyd_border_hi">#3D3D3D</color>
+
+    <!-- Accents matching typical HaleHound / ESP32-DIV chrome -->
+    <color name="cyd_green">#00FF41</color>
+    <color name="cyd_green_dim">#00AA2B</color>
+    <color name="cyd_green_ghost">#1A3D22</color>
+    <color name="cyd_amber">#FFCC00</color>
+    <color name="cyd_amber_dim">#B38F00</color>
+    <color name="cyd_cyan">#00D4FF</color>
+    <color name="cyd_cyan_dim">#0088AA</color>
+    <color name="cyd_magenta">#FF2BD6</color>
+    <color name="cyd_red">#FF3344</color>
+    <color name="cyd_orange">#FF8C00</color>
+    <color name="cyd_blue">#4DA3FF</color>
+    <color name="cyd_purple">#B388FF</color>
+
+    <!-- Text -->
+    <color name="cyd_text">#E8FFE8</color>
+    <color name="cyd_text_dim">#7A9A7A</color>
+    <color name="cyd_text_muted">#556655</color>
+    <color name="cyd_white">#FFFFFF</color>
+    <color name="cyd_black">#000000</color>
+
+    <!-- Mode banners -->
+    <color name="cyd_valhalla">#FFCC00</color>
+    <color name="cyd_blueteam">#00D4FF</color>
+
+    <!-- Legacy aliases (keep layouts compiling during migration) -->
+    <color name="hh_bg">@color/cyd_bg</color>
+    <color name="hh_surface">@color/cyd_panel</color>
+    <color name="hh_surface2">@color/cyd_panel_hi</color>
+    <color name="hh_border">@color/cyd_border</color>
+    <color name="hh_text">@color/cyd_text</color>
+    <color name="hh_muted">@color/cyd_text_dim</color>
+    <color name="hh_accent">@color/cyd_amber</color>
+    <color name="hh_accent_dim">@color/cyd_amber_dim</color>
+    <color name="hh_danger">@color/cyd_red</color>
+    <color name="hh_ok">@color/cyd_green</color>
+    <color name="hh_info">@color/cyd_cyan</color>
+    <color name="hh_chip">@color/cyd_panel_hi</color>
+    <color name="black">@color/cyd_black</color>
+    <color name="white">@color/cyd_white</color>
 </resources>
