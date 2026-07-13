@@ -26,6 +26,10 @@ class AboutFragment : Fragment() {
             HALEHOUND-FIRE  ${BuildConfig.VERSION_NAME}
             ${BuildConfig.APPLICATION_ID}
 
+            UNOFFICIAL · NOT AFFILIATED · NOT ENDORSED
+            HaleHound™ is a trademark of Jesse Hale,
+            used with permission for interoperability.
+
             SENSEI / NINJA
               PC trains the kit at home (identity stays in the dojo).
               Fire + CYD operate in the field — no desktop footprint.

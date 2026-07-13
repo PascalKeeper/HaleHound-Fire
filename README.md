@@ -1,5 +1,10 @@
 # HaleHound Fire
 
+> **UNOFFICIAL · NOT AFFILIATED · NOT ENDORSED**  
+> This is an independent community **Fire OS companion**. It is **not** official HaleHound firmware, **not** affiliated with the official product line beyond interoperability, and **not** an endorsed or substitute for the official CYD stack.  
+> **HaleHound™ is a trademark of Jesse Hale, used with permission for interoperability.**  
+> Full legal relationship: **[NOTICE.md](NOTICE.md)**.
+
 **Unofficial Fire OS companion** for the [HaleHound](https://halehound.com) ecosystem — Amazon Fire tablets (validated on **Fire 7 12th gen `KFQUWI`** / Fire OS 8.3.x).
 
 > **This is not ESP32 firmware on a Kindle.**  
@@ -67,7 +72,8 @@ Or use `install-to-fire.bat` after adjusting the `adb` path.
 - **Authorized use only** (your gear, written scope, CTF/lab).  
 - Stock Fire OS **cannot** perform monitor-mode 802.11 attacks; those modules require official CYD hardware.  
 - See in-app VALHALLA gate and [NOTICE.md](NOTICE.md).  
-- HaleHound™ marks belong to their owners; this is an **unofficial** companion.
+- **Unofficial · not affiliated · not endorsed** by the official HaleHound product.  
+- **HaleHound™ is a trademark of Jesse Hale, used with permission for interoperability.**
 
 ## Roadmap
 
@@ -75,11 +81,12 @@ Or use `install-to-fire.bat` after adjusting the `adb` path.
 - [ ] In-app WebView remote for CYD  
 - [ ] USB serial bridge when CYD is OTG-connected (experimental)  
 - [ ] Export survey CSVs  
-- [ ] Collaboration with upstream if maintainers want integration  
+- [x] Upstream awareness / trademark permission for interoperability (Jesse Hale / JMFH)  
+- [ ] More devices + field testing with official CYD  
 
 ## Courtesy to creators
 
-We open-sourced this as a **companion**, not a fork of the ESP32 firmware. Official maintainers are notified via GitHub issue on `JesseCHale/HaleHound-CYD`. Feedback on naming, branding, or collaboration is welcome.
+We open-sourced this as a **companion**, not a fork of the ESP32 firmware — no official bins, no phone-home, passive Blue Team on Fire OS. Jesse Hale reviewed the repo and is **good with it staying up as an unofficial companion**, with trademark wording as above. Support the official stack: [halehound.com](https://halehound.com) · [HaleHound-CYD](https://github.com/JesseCHale/HaleHound-CYD).
 
 ## References
 
