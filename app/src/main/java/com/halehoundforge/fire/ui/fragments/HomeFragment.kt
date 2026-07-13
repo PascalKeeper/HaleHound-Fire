@@ -28,12 +28,11 @@ class HomeFragment : Fragment() {
 
         // Arsenal tiles → CYD menu-tree style navigation
         binding.tileWifi.setOnClickListener { host?.navigateTo(R.id.nav_wifi) }
-        binding.tileBle.setOnClickListener { host?.navigateTo(R.id.nav_ble) }
+        binding.tileBle.setOnClickListener { host?.openBle() }
         binding.tileGuard.setOnClickListener { host?.navigateTo(R.id.nav_guard) }
         binding.tileSigint.setOnClickListener {
-            // SIGINT passive = WiFi survey + guardian combined entry
-            host?.navigateTo(R.id.nav_wifi)
-            Toast.makeText(requireContext(), "SIGINT › passive AP survey (Fire)", Toast.LENGTH_SHORT).show()
+            host?.navigateTo(R.id.nav_harden)
+            Toast.makeText(requireContext(), "HARDEN › network harden arsenal", Toast.LENGTH_SHORT).show()
         }
         binding.tileCyd.setOnClickListener { host?.navigateTo(R.id.nav_cyd) }
         binding.tileAbout.setOnClickListener { host?.openAbout() }

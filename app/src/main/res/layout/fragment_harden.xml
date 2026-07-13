@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cyd_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="HARDEN › ON-THE-GO ARSENAL"
+            android:textColor="@color/cyd_amber"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="monospace"
+            android:text="Ported from your Windows harden/optim stack · 100% on Fire · Blue Team"
+            android:textColor="@color/cyd_text_muted"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/scoreBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_cyd_banner_amber"
+            android:fontFamily="monospace"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="SCORE — run audit"
+            android:textColor="@color/cyd_amber"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAudit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="RUN FULL HARDEN AUDIT" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="monospace"
+            android:text="EXTRA HOST (optional LAN IP)"
+            android:textColor="@color/cyd_text_dim"
+            android:textSize="10sp" />
+
+        <EditText
+            android:id="@+id/extraHost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/bg_cyd_input"
+            android:fontFamily="monospace"
+            android:hint="e.g. 192.168.0.155 camera"
+            android:inputType="text"
+            android:padding="10dp"
+            android:textColor="@color/cyd_text"
+            android:textColorHint="@color/cyd_text_muted"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/postureBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_cyd_panel"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp"
+            android:padding="10dp"
+            android:text="Posture: waiting for audit…"
+            android:textColor="@color/cyd_text"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/findingsBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_cyd_panel"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp"
+            android:minHeight="80dp"
+            android:padding="10dp"
+            android:text="Findings will appear here."
+            android:textColor="@color/cyd_text_dim"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/portsBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_cyd_panel"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp"
+            android:minHeight="80dp"
+            android:padding="10dp"
+            android:text="Danger-port probe (gateway + this device)…"
+            android:textColor="@color/cyd_text_dim"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/checklistBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_cyd_panel"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp"
+            android:padding="10dp"
+            android:text="Checklist…"
+            android:textColor="@color/cyd_text_dim"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/optimBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_cyd_panel"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp"
+            android:padding="10dp"
+            android:text="Optim tips…"
+            android:textColor="@color/cyd_text_dim"
+            android:textSize="10sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDnsSettings"
+                style="@style/Widget.HaleHound.Button.Outline"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="DNS SETTINGS"
+                android:textSize="10sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnWifiSettings"
+                style="@style/Widget.HaleHound.Button.Outline"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="WIFI SETTINGS"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCopyReport"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="10dp"
+            android:text="COPY HARDEN REPORT" />
+    </LinearLayout>
+</ScrollView>

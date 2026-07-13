@@ -123,9 +123,9 @@
                     android:fontFamily="monospace" android:text="📊" android:textSize="16sp" />
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:layout_marginTop="4dp" android:fontFamily="monospace" android:gravity="center"
-                    android:text="SIGINT" android:textColor="@color/cyd_magenta" android:textSize="12sp" android:textStyle="bold" />
+                    android:text="HARDEN" android:textColor="@color/cyd_magenta" android:textSize="12sp" android:textStyle="bold" />
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:fontFamily="monospace" android:gravity="center" android:text="passive recon"
+                    android:fontFamily="monospace" android:gravity="center" android:text="port · dns · score"
                     android:textColor="@color/cyd_text_muted" android:textSize="9sp" />
             </LinearLayout>
         </LinearLayout>

@@ -5,6 +5,10 @@
         android:icon="@drawable/ic_nav_home"
         android:title="ARSENAL" />
     <item
+        android:id="@+id/nav_harden"
+        android:icon="@drawable/ic_nav_harden"
+        android:title="HARDEN" />
+    <item
         android:id="@+id/nav_guard"
         android:icon="@drawable/ic_nav_guard"
         android:title="GUARD" />
@@ -12,10 +16,6 @@
         android:id="@+id/nav_wifi"
         android:icon="@drawable/ic_nav_wifi"
         android:title="WIFI" />
-    <item
-        android:id="@+id/nav_ble"
-        android:icon="@drawable/ic_nav_ble"
-        android:title="BT" />
     <item
         android:id="@+id/nav_cyd"
         android:icon="@drawable/ic_nav_cyd"
