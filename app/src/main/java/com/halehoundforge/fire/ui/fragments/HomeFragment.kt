@@ -35,7 +35,11 @@ class HomeFragment : Fragment() {
             Toast.makeText(requireContext(), "HARDEN › network harden arsenal", Toast.LENGTH_SHORT).show()
         }
         binding.tileCyd.setOnClickListener { host?.navigateTo(R.id.nav_cyd) }
-        binding.tileAbout.setOnClickListener { host?.navigateTo(R.id.nav_term) }
+        binding.tileAbout.setOnClickListener {
+            // long-term: TERM is primary ops; About via terminal "open about"
+            host?.navigateTo(R.id.nav_term)
+        }
+        // double-tap path: hold not available — status chip includes privacy
     }
 
     override fun onDestroyView() {

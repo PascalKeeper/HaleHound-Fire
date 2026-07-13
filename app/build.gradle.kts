@@ -11,8 +11,8 @@ android {
         applicationId = "com.halehoundforge.fire"
         minSdk = 30
         targetSdk = 34
-        versionCode = 8
-        versionName = "0.8.0-fire"
+        versionCode = 9
+        versionName = "0.9.0-fire"
         // Fire OS 8 / Android 11 (API 30) — KFQUWI Fire 7 12th gen target
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -60,4 +60,5 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.9.3")
     implementation("androidx.fragment:fragment-ktx:1.8.5")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 }

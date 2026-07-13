@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="monospace"
-            android:text="ABOUT › DEVICE / LEGAL"
+            android:text="ABOUT › DEVICE / LEGAL / PRIVACY"
             android:textColor="@color/cyd_text"
             android:textSize="13sp"
             android:textStyle="bold" />
@@ -31,5 +31,68 @@
             android:padding="12dp"
             android:textColor="@color/cyd_text_dim"
             android:textSize="11sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:fontFamily="monospace"
+            android:text="PRIVACY (NINJA DEFAULTS)"
+            android:textColor="@color/cyd_cyan"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/privacyStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_cyd_panel"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp"
+            android:padding="10dp"
+            android:textColor="@color/cyd_text"
+            android:textSize="10sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnToggleScrub"
+            style="@style/Widget.HaleHound.Button.Outline"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="TOGGLE PII SCRUB"
+            android:textSize="11sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnToggleEncrypt"
+            style="@style/Widget.HaleHound.Button.Outline"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="4dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="TOGGLE ENCRYPT EXPORTS"
+            android:textSize="11sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnToggleHome"
+            style="@style/Widget.HaleHound.Button.Outline"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="4dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="TOGGLE CALL-HOME (DEFAULT OFF)"
+            android:textSize="11sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnWipeSecure"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
+            android:text="WIPE SECURE PREFS / MARKERS" />
     </LinearLayout>
 </ScrollView>

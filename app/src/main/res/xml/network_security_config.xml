@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Cleartext allowed for local CYD companion AP / captive portal labs only -->
+<!--
+  Android cannot express "all RFC1918" in domain-config (raw IPs use base-config).
+  Cleartext is permitted at OS level for local lab/CYD IPs; app-layer HomeCallPolicy
+  REFUSES cleartext to non-private hosts when call-home is used. Default: no call-home.
+  No third-party analytics endpoints exist in this app.
+-->
 <network-security-config>
-    <base-config cleartextTrafficPermitted="true" />
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
 </network-security-config>

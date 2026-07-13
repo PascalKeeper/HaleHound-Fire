@@ -17,6 +17,9 @@ import com.halehoundforge.fire.databinding.FragmentHardenBinding
 import com.halehoundforge.fire.hardening.FirewallBatchGenerator
 import com.halehoundforge.fire.hardening.HardeningEngine
 import com.halehoundforge.fire.hardening.HardeningKnowledge
+import com.halehoundforge.fire.privacy.ExportCrypto
+import com.halehoundforge.fire.privacy.PiiScrubber
+import com.halehoundforge.fire.privacy.PrivacySettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -172,9 +175,11 @@ class HardenFragment : Fragment() {
             Toast.makeText(requireContext(), "Run an audit first", Toast.LENGTH_SHORT).show()
             return
         }
+        val body = PiiScrubber.maybeScrub(requireContext(), lastReport)
         val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        cm.setPrimaryClip(ClipData.newPlainText("halehound-harden-report", lastReport))
-        Toast.makeText(requireContext(), "Report copied to clipboard", Toast.LENGTH_SHORT).show()
+        cm.setPrimaryClip(ClipData.newPlainText("halehound-harden-report", body))
+        val note = if (PrivacySettings.scrubPii(requireContext())) " (PII scrubbed)" else ""
+        Toast.makeText(requireContext(), "Report copied$note", Toast.LENGTH_SHORT).show()
     }
 
     private fun genFirewallBat() {
@@ -193,28 +198,36 @@ class HardenFragment : Fragment() {
                     )
                 )
 
-                val path = withContext(Dispatchers.IO) {
+                val (path, encPath) = withContext(Dispatchers.IO) {
                     writeBatFiles(bat)
                 }
                 lastBatPath = path
 
+                // Clipboard: scrubbed notice only (full bat is sensitive ops automation)
+                val clipNote = PiiScrubber.maybeScrub(
+                    requireContext(),
+                    "HHF firewall bat generated. Pull encrypted/plain from app files.\n$path\n$encPath"
+                )
                 val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                cm.setPrimaryClip(ClipData.newPlainText("hhf-firewall.bat", bat))
+                cm.setPrimaryClip(ClipData.newPlainText("hhf-firewall-path", clipNote))
 
                 binding.firewallBatHint.text = buildString {
-                    appendLine("SAVED + COPIED Windows netsh .bat")
-                    appendLine(path)
+                    appendLine("WINDOWS FIREWALL EXPORT")
+                    appendLine("plain : $path")
+                    if (encPath.isNotBlank()) appendLine("crypt : $encPath  (HHF1 AES-GCM)")
+                    appendLine("scrub : ${PrivacySettings.scrubPii(requireContext())}")
+                    appendLine("encrypt exports: ${PrivacySettings.encryptExports(requireContext())}")
                     appendLine()
-                    appendLine("On PC (USB):")
+                    appendLine("Sensei PC (rare):")
                     appendLine("  adb pull \"$path\" .")
-                    appendLine("  Right-click → Run as administrator")
-                    appendLine()
-                    appendLine("Or repo fallback:")
-                    appendLine("  tools\\hhf-firewall-baseline.bat")
+                    if (encPath.isNotBlank()) appendLine("  adb pull \"$encPath\" .")
+                    appendLine("  Run plain .bat as Administrator")
                     appendLine("Undo: tools\\hhf-firewall-undo.bat")
+                    appendLine()
+                    appendLine("Ninja default: no auto upload · no phone-home")
                 }.trimEnd()
 
-                Toast.makeText(requireContext(), "Firewall .bat saved + clipboard", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Firewall export saved (encrypted if enabled)", Toast.LENGTH_LONG).show()
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Gen failed: ${e.message}", Toast.LENGTH_LONG).show()
                 binding.firewallBatHint.text = "Gen failed: ${e.message}"
@@ -224,14 +237,31 @@ class HardenFragment : Fragment() {
         }
     }
 
-    private fun writeBatFiles(bat: String): String {
+    private fun writeBatFiles(bat: String): Pair<String, String> {
         val dir = requireContext().getExternalFilesDir(null)
             ?: requireContext().filesDir
-        val out = File(dir, "HHF_firewall_harden.bat")
-        out.writeText(bat)
-        // also undo next to it for convenience
+        val plain = File(dir, "HHF_firewall_harden.bat")
+        // Plain needed for Windows netsh; keep in app-private external files (not world media)
+        plain.writeText(bat)
         File(dir, "HHF_firewall_undo.bat").writeText(FirewallBatchGenerator.undoBatch())
-        return out.absolutePath
+        var encPath = ""
+        if (PrivacySettings.encryptExports(requireContext())) {
+            val enc = File(dir, "HHF_firewall_harden.bat.hhf")
+            ExportCrypto.encryptToFile(requireContext(), bat.toByteArray(Charsets.UTF_8), enc)
+            encPath = enc.absolutePath
+        }
+        val report = File(dir, "HHF_harden_report.txt")
+        val body = PiiScrubber.maybeScrub(requireContext(), lastReport.ifBlank { "no audit yet" })
+        if (PrivacySettings.encryptExports(requireContext())) {
+            ExportCrypto.encryptToFile(
+                requireContext(),
+                body.toByteArray(Charsets.UTF_8),
+                File(dir, "HHF_harden_report.txt.hhf")
+            )
+        } else {
+            report.writeText(body)
+        }
+        return plain.absolutePath to encPath
     }
 
     override fun onDestroyView() {

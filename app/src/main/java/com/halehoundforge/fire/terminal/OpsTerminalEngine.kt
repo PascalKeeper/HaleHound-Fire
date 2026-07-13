@@ -8,6 +8,11 @@ import com.halehoundforge.fire.core.DeviceProfile
 import com.halehoundforge.fire.hardening.FirewallBatchGenerator
 import com.halehoundforge.fire.hardening.HardeningEngine
 import com.halehoundforge.fire.hardening.HardeningKnowledge
+import com.halehoundforge.fire.privacy.ExportCrypto
+import com.halehoundforge.fire.privacy.HomeCallPolicy
+import com.halehoundforge.fire.privacy.PiiScrubber
+import com.halehoundforge.fire.privacy.PrivacySettings
+import com.halehoundforge.fire.privacy.SecureStore
 import java.io.File
 import com.halehoundforge.fire.radio.BleSurvey
 import com.halehoundforge.fire.radio.WifiSurvey
@@ -45,7 +50,7 @@ class OpsTerminalEngine(private val context: Context) {
         val args = parts.drop(1)
 
         return try {
-            when (cmd) {
+            val result = when (cmd) {
                 "help", "?", "h" -> Result(HELP)
                 "agent", "grok", "protocol" -> Result(AGENT_PROTOCOL)
                 "clear", "cls" -> Result("__CLEAR__")
@@ -56,6 +61,7 @@ class OpsTerminalEngine(private val context: Context) {
                 "status", "whoami", "device", "info" -> Result(statusBlock())
                 "harden", "audit", "score" -> runHarden()
                 "firewall", "fw", "netsh", "bat" -> runFirewallBat()
+                "privacy", "opsec", "ninja" -> runPrivacy(args)
                 "wifi", "wlanscan", "scanwifi" -> runWifi()
                 "ble", "blescan" -> runBle()
                 "cyd", "discover" -> runCyd()
@@ -98,8 +104,46 @@ class OpsTerminalEngine(private val context: Context) {
                     "Unknown command: $cmd\nType  help  or tap a chip below."
                 )
             }
+            // Scrub operator-facing transcript when privacy scrub is on
+            if (result.output != "__CLEAR__" && result.output.isNotBlank()) {
+                Result(PiiScrubber.maybeScrub(context, result.output), result.navigate)
+            } else result
         } catch (e: Exception) {
             Result("ERROR: ${e.message ?: e.javaClass.simpleName}")
+        }
+    }
+
+    private fun runPrivacy(args: List<String>): Result {
+        val sub = args.firstOrNull()?.lowercase()
+        return when (sub) {
+            null, "status", "show" -> Result(PrivacySettings.summary(context))
+            "scrub" -> {
+                val v = !PrivacySettings.scrubPii(context)
+                PrivacySettings.setScrubPii(context, v)
+                Result("scrub PII → $v")
+            }
+            "encrypt" -> {
+                val v = !PrivacySettings.encryptExports(context)
+                PrivacySettings.setEncryptExports(context, v)
+                Result("encrypt exports → $v")
+            }
+            "home" -> {
+                val v = !PrivacySettings.allowHomeCalls(context)
+                PrivacySettings.setAllowHomeCalls(context, v)
+                Result("allow call-home → $v  (HTTPS required for public hosts)")
+            }
+            "wipe" -> {
+                SecureStore.clearAll(context)
+                Result("Secure prefs wiped. Restart app for VALHALLA gate.")
+            }
+            "check" -> {
+                val url = args.getOrNull(1) ?: return Result("Usage: privacy check <url>")
+                when (val d = HomeCallPolicy.evaluate(context, url)) {
+                    is HomeCallPolicy.Decision.Allowed -> Result("ALLOWED: $url")
+                    is HomeCallPolicy.Decision.Denied -> Result("DENIED: ${d.reason}")
+                }
+            }
+            else -> Result("privacy [status|scrub|encrypt|home|wipe|check <url>]")
         }
     }
 
@@ -175,16 +219,24 @@ class OpsTerminalEngine(private val context: Context) {
         val out = File(dir, "HHF_firewall_harden.bat")
         out.writeText(bat)
         File(dir, "HHF_firewall_undo.bat").writeText(FirewallBatchGenerator.undoBatch())
+        var encLine = ""
+        if (PrivacySettings.encryptExports(context)) {
+            val enc = File(dir, "HHF_firewall_harden.bat.hhf")
+            ExportCrypto.encryptToFile(context, bat.toByteArray(Charsets.UTF_8), enc)
+            encLine = enc.absolutePath
+        }
         Result(
             buildString {
                 appendLine("═══ WINDOWS FIREWALL .BAT ═══")
                 appendLine("Wrote netsh block script (cannot run netsh on Fire).")
                 appendLine(out.absolutePath)
+                if (encLine.isNotBlank()) appendLine("encrypted: $encLine")
+                appendLine("scrub=${PrivacySettings.scrubPii(context)} encrypt=${PrivacySettings.encryptExports(context)}")
+                appendLine("call-home=${PrivacySettings.allowHomeCalls(context)} (default off)")
                 appendLine()
-                appendLine("PC:")
+                appendLine("Sensei PC (rare):")
                 appendLine("  adb pull \"${out.absolutePath}\" .")
-                appendLine("  Right-click HHF_firewall_harden.bat → Run as administrator")
-                appendLine("Or: tools\\hhf-firewall-baseline.bat")
+                appendLine("  Run as administrator")
                 appendLine("Undo: tools\\hhf-firewall-undo.bat")
                 if (open.isNotEmpty()) {
                     appendLine()
@@ -400,7 +452,7 @@ class OpsTerminalEngine(private val context: Context) {
 
     companion object {
         val QUICK_CHIPS = listOf(
-            "help", "status", "harden", "firewall", "wifi", "ble", "cyd", "guard", "dns", "agent", "clear"
+            "help", "status", "harden", "firewall", "privacy", "wifi", "ble", "cyd", "guard", "dns", "agent", "clear"
         )
 
         private val HELP = """

@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.root.findViewById<TextView>(R.id.headerVersion)?.text =
             "v${BuildConfig.VERSION_NAME.substringBefore("-")}"
-        binding.root.findViewById<TextView>(R.id.modeBanner)?.text = "◆ OPS · GROK-FRIENDLY"
+        binding.root.findViewById<TextView>(R.id.modeBanner)?.text = "◆ NINJA · NO PHONE-HOME"
         binding.root.findViewById<TextView>(R.id.headerTitle)?.text = "HALEHOUND-FIRE"
 
         if (savedInstanceState == null) {

@@ -1,29 +1,36 @@
 package com.halehoundforge.fire.core
 
 import android.content.Context
+import com.halehoundforge.fire.privacy.SecureStore
 
 /**
- * VALHALLA Protocol gate — user must accept authorized/legal use before arsenal UI.
+ * VALHALLA Protocol gate — stored in encrypted prefs (no plain marker files).
  */
 object ValhallaStore {
-    private const val PREFS = "halehound_fire_valhalla"
-    private const val KEY_ACCEPTED = "accepted_v1"
-    private const val KEY_ACCEPTED_AT = "accepted_at_ms"
+    private const val KEY_ACCEPTED = "valhalla_accepted_v1"
+    private const val KEY_ACCEPTED_AT = "valhalla_accepted_at_ms"
 
-    fun isAccepted(context: Context): Boolean =
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getBoolean(KEY_ACCEPTED, false)
+    fun isAccepted(context: Context): Boolean {
+        // migrate from legacy plain prefs once
+        if (SecureStore.getBool(context, KEY_ACCEPTED, false)) return true
+        val legacy = context.getSharedPreferences("halehound_fire_valhalla", Context.MODE_PRIVATE)
+        if (legacy.getBoolean("accepted_v1", false)) {
+            accept(context)
+            legacy.edit().clear().apply()
+            return true
+        }
+        return false
+    }
 
     fun accept(context: Context) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
-            .putBoolean(KEY_ACCEPTED, true)
-            .putLong(KEY_ACCEPTED_AT, System.currentTimeMillis())
-            .apply()
+        SecureStore.putBool(context, KEY_ACCEPTED, true)
+        SecureStore.putLong(context, KEY_ACCEPTED_AT, System.currentTimeMillis())
     }
 
     fun revoke(context: Context) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
-            .clear()
-            .apply()
+        SecureStore.remove(context, KEY_ACCEPTED)
+        SecureStore.remove(context, KEY_ACCEPTED_AT)
+        context.getSharedPreferences("halehound_fire_valhalla", Context.MODE_PRIVATE)
+            .edit().clear().apply()
     }
 }

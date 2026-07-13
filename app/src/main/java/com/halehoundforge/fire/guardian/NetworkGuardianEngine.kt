@@ -165,9 +165,27 @@ class NetworkGuardianEngine(private val context: Context) {
 
     fun setPreferredSsid(ssid: String?) {
         preferredSsid = ssid?.trim()?.ifEmpty { null }
+        // encrypted at rest
+        try {
+            com.halehoundforge.fire.privacy.SecureStore.putString(
+                context,
+                "preferred_ssid",
+                preferredSsid ?: ""
+            )
+        } catch (_: Exception) {
+        }
     }
 
-    fun getPreferredSsid(): String? = preferredSsid
+    fun getPreferredSsid(): String? {
+        if (preferredSsid != null) return preferredSsid
+        return try {
+            val s = com.halehoundforge.fire.privacy.SecureStore.getString(context, "preferred_ssid", "")
+            preferredSsid = s.ifBlank { null }
+            preferredSsid
+        } catch (_: Exception) {
+            preferredSsid
+        }
+    }
 
     fun start(scope: CoroutineScope) {
         if (running) return
