@@ -2,9 +2,11 @@
 
 **Unofficial Fire OS companion** for the [HaleHound](https://halehound.com) ecosystem — Amazon Fire tablets (validated on **Fire 7 12th gen `KFQUWI`** / Fire OS 8.3.x).
 
-> **This is not ESP32 firmware.** Full multi-radio HaleHound still runs on [Cheap Yellow Display (CYD)](https://github.com/JesseCHale/HaleHound-CYD) boards. This app is **Layer A**: passive Blue Team survey + CYD companion shell on a Fire tablet.
+> **This is not ESP32 firmware on a Kindle.**  
+> The CYD stays the **radio edge** (tight flash/RAM, multi-protocol TX/RX).  
+> The Fire is the **debug / storage / operator plane** — more screen, disk, and compute for long sessions and future telemetry/loot analysis.
 
-**Status:** independent community project · MIT · [NOTICE.md](NOTICE.md) (attribution & non-affiliation)
+**Status:** independent community project · MIT · [NOTICE.md](NOTICE.md) · [ARCHITECTURE.md](ARCHITECTURE.md)
 
 **Authors of this companion:** [PascalKeeper](https://github.com/PascalKeeper) / Joseph Peransi  
 
@@ -12,28 +14,28 @@
 
 ---
 
-## Architecture
+## Architecture (why Fire + CYD)
 
 | Layer | Hardware | Role |
 |-------|----------|------|
-| **A — HaleHound Fire** (this repo) | Kindle Fire / Fire OS tablet | VALHALLA gate, Wi‑Fi/BLE passive survey, CYD discovery |
-| **B — HaleHound CYD** (official) | ESP32-2432S028 / E32Rxx + modules | Full multi-radio arsenal (flash via desktop Web Serial) |
+| **BRAIN — HaleHound Fire** | Kindle Fire / Fire OS | Debug UI, local Guardian, surveys, loot/storage offload (roadmap), CYD link |
+| **EDGE — HaleHound CYD** | ESP32 CYD + modules | All radios, frame-level tools, standalone field kit |
+| **LAB (optional)** | Windows PC | Flash only; optional Npcap — **not required in the field** |
 
 ```
-┌─────────────────────┐         Wi‑Fi / HTTP          ┌──────────────────────┐
-│  Amazon Fire tablet │  ◄──────────────────────────► │  ESP32 CYD + modules │
-│  HaleHound Fire APK │     companion / softAP UI     │  Official firmware   │
-└─────────────────────┘                               └──────────────────────┘
+ FIRE (space · compute · debug UI)  ◄── Wi‑Fi/USB ──►  CYD (radios · tight resources)
 ```
 
-## v0.1 features
+Full rationale and phased roadmap: **[ARCHITECTURE.md](ARCHITECTURE.md)**.
+
+## Current features
 
 - VALHALLA Protocol legal / authorization gate  
-- Host capability matrix (native Fire vs CYD-required)  
-- Passive Wi‑Fi survey (`WifiManager`) — **no injection / deauth**  
-- Passive BLE advertisement survey  
-- CYD HTTP discovery (common softAP IPs) + open in Silk/browser  
-- Fire OS 8 / API 30, portrait UI suited to 1024×600  
+- CYD-style arsenal UI + locked radio tiles (honest capability matrix)  
+- **Fully local** Network Guardian (no laptop)  
+- Passive Wi‑Fi / BLE survey  
+- CYD discover + open softAP URL  
+- Foundation for future **debug companion** (telemetry, loot pull, serial console)  
 
 ## Build (Windows)
 

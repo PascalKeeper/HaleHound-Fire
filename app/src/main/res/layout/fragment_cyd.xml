@@ -90,7 +90,7 @@
             android:fontFamily="monospace"
             android:lineSpacingExtra="3dp"
             android:padding="10dp"
-            android:text="Flash official firmware from Windows:\nflash.halehound.com\n\nChrome/Edge + Web Serial · not Silk on Fire."
+            android:text="Flash official firmware from Windows:\nflash.halehound.com\n\nChrome/Edge + Web Serial · not Silk on Fire.\n\nDEBUG PLANE ROADMAP\n• Live CYD telemetry (heap, mode, armed modules)\n• Loot pull (SD captures → Fire storage)\n• Optional OTG serial console viewer\n\nRadios stay on the CYD; Fire holds the large logs."
             android:textColor="@color/cyd_text_dim"
             android:textSize="11sp" />
     </LinearLayout>

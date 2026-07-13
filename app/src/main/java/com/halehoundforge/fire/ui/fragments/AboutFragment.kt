@@ -22,8 +22,11 @@ class AboutFragment : Fragment() {
             HALEHOUND-FIRE  ${BuildConfig.VERSION_NAME}
             ${BuildConfig.APPLICATION_ID}
 
-            Layout modeled after HaleHound-CYD arsenal menu
-            (WiFi / BT / Jam Detect / SIGINT / CYD-only locks).
+            WHY FIRE + CYD
+              CYD = radio edge (tight flash/RAM/compute).
+              Fire = debug/storage/operator plane (screen,
+              disk, APK iterate without reflashing radios).
+              Not “firmware on Kindle” — companion architecture.
 
             OFFICIAL CYD FIRMWARE
               halehound.com
@@ -31,13 +34,14 @@ class AboutFragment : Fragment() {
               github.com/JesseCHale/HaleHound-CYD
 
             THIS APP
-              Unofficial Fire OS companion — not ESP32 firmware.
+              Unofficial Fire OS companion.
               No firmware binaries redistributed.
-              Blue Team only on stock Fire OS.
+              Local Guardian + surveys work offline.
+              Roadmap: CYD telemetry, loot pull, serial debug.
 
             VALHALLA PROTOCOL
-              Authorized use only. Offensive TX modules require
-              a real CYD + external radios under written scope.
+              Authorized use only. TX modules stay on CYD
+              under written scope.
 
             VALIDATED
               Fire 7 12th gen  KFQUWI / quartz
