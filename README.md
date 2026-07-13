@@ -6,7 +6,7 @@
 > The CYD stays the **radio edge** (tight flash/RAM, multi-protocol TX/RX).  
 > The Fire is the **debug / storage / operator plane** — more screen, disk, and compute for long sessions and future telemetry/loot analysis.
 
-**Status:** independent community project · MIT · [NOTICE.md](NOTICE.md) · [ARCHITECTURE.md](ARCHITECTURE.md)
+**Status:** v1.0.0 shipped · independent community project · MIT · [NOTICE.md](NOTICE.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [PRIVACY.md](PRIVACY.md)
 
 **Authors of this companion:** [PascalKeeper](https://github.com/PascalKeeper) / Joseph Peransi  
 
